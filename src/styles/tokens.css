@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Rajdhani", "Segoe UI", sans-serif;
+  --font-body: "Sora", "Segoe UI", sans-serif;
+  --font-mono: "Space Mono", "Courier New", monospace;
+
+  --color-void: #030405;
+  --color-surface-0: #07080a;
+  --color-surface-1: #0d0f13;
+  --color-surface-2: #14171d;
+  --color-surface-3: #1c2029;
+  --color-surface-border: rgba(255, 255, 255, 0.08);
+  --color-surface-border-strong: rgba(255, 255, 255, 0.16);
+
+  --color-ink-primary: #eef1f6;
+  --color-ink-secondary: #99a2b1;
+  --color-ink-tertiary: #5c6472;
+  --color-ink-disabled: #363a44;
+
+  --color-system: #4cc9f0;
+  --color-system-dim: #1f4e5c;
+  --color-system-strong: #8fe3ff;
+  --color-danger: #ff3b4e;
+  --color-danger-dim: #5c1620;
+  --color-danger-strong: #ff7683;
+  --color-gold: #f5a623;
+  --color-gold-dim: #5c4315;
+
+  --color-rarity-comum: #8b93a1;
+  --color-rarity-incomum: #46d67a;
+  --color-rarity-raro: #5b7cfa;
+  --color-rarity-ultrararo: #b34bf5;
+  --color-rarity-lendario: #f5a623;
+  --color-rarity-deus: #fff3d6;
+
+  --color-rank-e: #6b7280;
+  --color-rank-d: #3ea6d9;
+  --color-rank-c: #2fd6a7;
+  --color-rank-b: #a78bfa;
+  --color-rank-a: #fb923c;
+  --color-rank-s: #ef4444;
+  --color-rank-splus: #f4f8ff;
+
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+
+  --animate-pulse-slow: pulse-slow 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 3.4s linear infinite;
+  --animate-scan: scan 2.6s linear infinite;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-ink-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: var(--color-system);
+  color: var(--color-void);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-3) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-3);
+  border-radius: var(--radius-md);
+}
+
+.text-shimmer-gold {
+  background: linear-gradient(110deg, #fff3d6 20%, var(--color-gold) 40%, #fff 50%, var(--color-gold) 60%, #fff3d6 80%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+}
+
+.text-shimmer-deus {
+  background: linear-gradient(110deg, #fff 15%, var(--color-rarity-deus) 35%, var(--color-system-strong) 50%, var(--color-rarity-deus) 65%, #fff 85%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+}
+
+.bg-shimmer-gold {
+  background: linear-gradient(110deg, var(--color-gold) 20%, #fff3d6 40%, var(--color-gold) 60%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+.bg-shimmer-deus {
+  background: linear-gradient(
+    110deg,
+    #fff 15%,
+    var(--color-rarity-deus) 35%,
+    var(--color-system-strong) 50%,
+    var(--color-rarity-deus) 65%,
+    #fff 85%
+  );
+  background-size: 220% 100%;
+  animation: var(--animate-shimmer);
+}
+
+.bg-shimmer-splus {
+  background: linear-gradient(110deg, #cfd8e3 15%, #ffffff 35%, var(--color-system-strong) 50%, #ffffff 65%, #cfd8e3 85%);
+  background-size: 220% 100%;
+  animation: var(--animate-shimmer);
+}
+
+.clip-hex {
+  clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0% 50%);
+}
+
+.clip-gem {
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
