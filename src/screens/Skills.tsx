@@ -1,14 +1,10 @@
 import { Sparkle } from "@phosphor-icons/react"
 import { SkillCard } from "@/components/rpg/SkillCard"
 import { EmptyState } from "@/components/system/EmptyState"
-import { getSkillById } from "@/data/skills"
-import { useGameStore } from "@/store/useGameStore"
+import { trpc } from "@/lib/trpc"
 
 export function SkillsScreen() {
-  const discoveredSkillIds = useGameStore((state) => state.discoveredSkillIds)
-  const skills = discoveredSkillIds
-    .map((id) => getSkillById(id))
-    .filter((skill): skill is NonNullable<typeof skill> => Boolean(skill))
+  const { data: skills } = trpc.skills.discovered.useQuery()
 
   return (
     <div className="space-y-6">
@@ -17,7 +13,7 @@ export function SkillsScreen() {
         <h1 className="mt-1 font-display text-2xl font-bold text-ink-primary">Habilidades</h1>
       </div>
 
-      {skills.length === 0 ? (
+      {!skills || skills.length === 0 ? (
         <EmptyState
           icon={Sparkle}
           title="Nenhuma Habilidade Despertada"

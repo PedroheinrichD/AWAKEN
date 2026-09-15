@@ -1,8 +1,9 @@
 import { EventCard } from "@/components/events/EventCard"
-import { EVENTS } from "@/data/events"
+import { trpc } from "@/lib/trpc"
 
 export function EventsScreen() {
-  const sorted = [...EVENTS].sort((a, b) => Number(b.active) - Number(a.active))
+  const { data: events } = trpc.events.list.useQuery()
+  const sorted = [...(events ?? [])].sort((a, b) => Number(b.active) - Number(a.active))
 
   return (
     <div className="space-y-6">

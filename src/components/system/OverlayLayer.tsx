@@ -4,20 +4,19 @@ import { RankUp } from "@/components/cinematic/RankUp"
 import { useGameStore } from "@/store/useGameStore"
 
 export function OverlayLayer() {
-  const overlay = useGameStore((state) => state.overlay)
-  const levelUpPayload = useGameStore((state) => state.levelUpPayload)
-  const rankUpPayload = useGameStore((state) => state.rankUpPayload)
-  const awakenedSkill = useGameStore((state) => state.awakenedSkill)
-  const closeOverlay = useGameStore((state) => state.closeOverlay)
+  const overlay = useGameStore((state) => state.overlayQueue[0])
+  const dismissOverlay = useGameStore((state) => state.dismissOverlay)
 
-  if (overlay === "levelUp" && levelUpPayload) {
-    return <LevelUp from={levelUpPayload.from} to={levelUpPayload.to} onDismiss={closeOverlay} />
+  if (!overlay) return null
+
+  if (overlay.type === "levelUp") {
+    return <LevelUp from={overlay.from} to={overlay.to} onDismiss={dismissOverlay} />
   }
-  if (overlay === "rankUp" && rankUpPayload) {
-    return <RankUp from={rankUpPayload.from} to={rankUpPayload.to} onDismiss={closeOverlay} />
+  if (overlay.type === "rankUp") {
+    return <RankUp from={overlay.from} to={overlay.to} onDismiss={dismissOverlay} />
   }
-  if (overlay === "awakening" && awakenedSkill) {
-    return <Awakening skill={awakenedSkill} onDismiss={closeOverlay} />
+  if (overlay.type === "awakening") {
+    return <Awakening skill={overlay.skill} onDismiss={dismissOverlay} />
   }
   return null
 }

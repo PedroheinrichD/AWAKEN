@@ -1,0 +1,553 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Rank {
+  E
+  D
+  C
+  B
+  A
+  S
+  SPLUS
+}
+
+enum Rarity {
+  COMUM
+  INCOMUM
+  RARO
+  ULTRA_RARO
+  LENDARIO
+  DEUS
+}
+
+enum ItemCategory {
+  ARMA
+  ARMADURA
+  ROUPA
+  ACESSORIO
+  ITEM
+  POCAO
+  ITEM_MAGICO
+}
+
+enum EquipmentSlot {
+  CABECA
+  CORPO
+  MAOS
+  PERNAS
+  PES
+  ARMA
+  ACESSORIO1
+  ACESSORIO2
+}
+
+enum BodyType {
+  ESGUIO
+  ATLETICO
+  ROBUSTO
+}
+
+enum HairStyle {
+  RASPADO
+  CURTO
+  LONGO
+  PRESO
+}
+
+enum MissionType {
+  DIARIA
+  BONUS
+  ESPECIAL
+}
+
+enum BossEncounterType {
+  COMUM
+  ERRANTE
+  SECRETO
+}
+
+enum BattleStatus {
+  EM_ANDAMENTO
+  VITORIA
+  DERROTA
+}
+
+enum PerformanceTier {
+  RUIM
+  NORMAL
+  EXCELENTE
+  EXCEPCIONAL
+}
+
+enum DuelStatus {
+  PENDENTE
+  ACEITO
+  RECUSADO
+  CONCLUIDO
+}
+
+enum ExerciseLogSource {
+  MISSAO
+  BOSS
+  X1
+  LIVRE
+}
+
+enum ExerciseUnit {
+  REPETICOES
+  QUILOMETROS
+  SEGUNDOS
+}
+
+model Player {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  characters  Character[]
+  vaultItems  PlayerVaultItem[]
+}
+
+model Character {
+  id             String    @id @default(cuid())
+  player         Player    @relation(fields: [playerId], references: [id])
+  playerId       String
+  name           String
+  level          Int       @default(1)
+  xp             Int       @default(0)
+  rank           Rank      @default(E)
+  hp             Int       @default(100)
+  hpMax          Int       @default(100)
+  forca          Int       @default(10)
+  resistencia    Int       @default(10)
+  agilidade      Int       @default(10)
+  vitalidade     Int       @default(10)
+  stamina        Int       @default(10)
+  streakCurrent  Int       @default(0)
+  streakLongest  Int       @default(0)
+  lastActiveDate DateTime? @db.Date
+  eventCurrency  Int       @default(0)
+
+  skinTone  String    @default("#c68a5e")
+  hairStyle HairStyle @default(CURTO)
+  hairColor String    @default("#1c1a19")
+  eyeColor  String    @default("#4cc9f0")
+  bodyType  BodyType  @default(ATLETICO)
+
+  equippedTitleId String?
+  equippedTitle   Title?  @relation(fields: [equippedTitleId], references: [id])
+
+  isAlive   Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  diedAt    DateTime?
+
+  inventory          InventoryItem[]
+  equipment          CharacterEquipment[]
+  missionAssignments MissionAssignment[]
+  exerciseLogs       ExerciseLog[]
+  stats              CharacterStats?
+  battles            Battle[]
+  skills             CharacterSkill[]
+  achievements       CharacterAchievement[]
+  titles             CharacterTitle[]
+  shopPurchases      ShopPurchase[]
+  deathRecords       DeathRecord[]
+  duelsAsChallenger  Duel[]                 @relation("duelChallenger")
+  duelsAsOpponent    Duel[]                 @relation("duelOpponent")
+  duelsWon           Duel[]                 @relation("duelWinner")
+
+  @@index([playerId])
+  @@index([equippedTitleId])
+}
+
+model Item {
+  id          String       @id
+  name        String
+  category    ItemCategory
+  slot        EquipmentSlot?
+  rarity      Rarity
+  icon        String
+  description String       @db.Text
+  passive     String?      @db.Text
+  active      String?      @db.Text
+  stackable   Boolean      @default(false)
+  tradeable   Boolean      @default(false)
+  survivesDeath Boolean    @default(false)
+
+  reqLevel       Int?
+  reqRank        Rank?
+  reqForca       Int?
+  reqResistencia Int?
+  reqAgilidade   Int?
+  reqVitalidade  Int?
+  reqStamina     Int?
+
+  bonusForca      Int @default(0)
+  bonusResistencia Int @default(0)
+  bonusAgilidade  Int @default(0)
+  bonusVitalidade Int @default(0)
+  bonusStamina    Int @default(0)
+
+  inventoryOf   InventoryItem[]
+  equippedBy    CharacterEquipment[]
+  vaultOf       PlayerVaultItem[]
+  missionReward Mission[]
+  shopListing   ShopListing[]
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  item        Item      @relation(fields: [itemId], references: [id])
+  itemId      String
+  quantity    Int       @default(1)
+  acquiredAt  DateTime  @default(now())
+  source      String?
+
+  @@unique([characterId, itemId])
+  @@index([characterId])
+}
+
+model CharacterEquipment {
+  id          String        @id @default(cuid())
+  character   Character     @relation(fields: [characterId], references: [id])
+  characterId String
+  slot        EquipmentSlot
+  item        Item          @relation(fields: [itemId], references: [id])
+  itemId      String
+  equippedAt  DateTime      @default(now())
+
+  @@unique([characterId, slot])
+  @@index([characterId])
+}
+
+model PlayerVaultItem {
+  id       String @id @default(cuid())
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId String
+  item     Item   @relation(fields: [itemId], references: [id])
+  itemId   String
+  quantity Int    @default(1)
+
+  @@unique([playerId, itemId])
+}
+
+model Exercise {
+  id          String       @id
+  name        String
+  unit        ExerciseUnit
+  description String?      @db.Text
+
+  variants   ExerciseVariant[]
+  missions   Mission[]
+  logs       ExerciseLog[]
+  battleTurns BattleTurn[]
+  duels      Duel[]
+}
+
+model ExerciseVariant {
+  id          String @id @default(cuid())
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId  String
+  rank        Rank
+  name        String
+  description String @db.Text
+
+  @@unique([exerciseId, rank])
+}
+
+model Mission {
+  id             String      @id
+  title          String
+  description    String      @db.Text
+  objective      String
+  type           MissionType
+  exercise       Exercise?   @relation(fields: [exerciseId], references: [id])
+  exerciseId     String?
+  targetReps     Int?
+  targetKm       Float?
+  targetSeconds  Int?
+  xpReward       Int         @default(0)
+  itemReward     Item?       @relation(fields: [itemRewardId], references: [id])
+  itemRewardId   String?
+  currencyReward Int         @default(0)
+  active         Boolean     @default(true)
+
+  assignments MissionAssignment[]
+}
+
+model MissionAssignment {
+  id           String    @id @default(cuid())
+  character    Character @relation(fields: [characterId], references: [id])
+  characterId  String
+  mission      Mission   @relation(fields: [missionId], references: [id])
+  missionId    String
+  assignedDate DateTime  @db.Date
+  progress     Int       @default(0)
+  completed    Boolean   @default(false)
+  completedAt  DateTime?
+
+  @@unique([characterId, missionId, assignedDate])
+  @@index([characterId, assignedDate])
+}
+
+model ExerciseLog {
+  id              String            @id @default(cuid())
+  character       Character         @relation(fields: [characterId], references: [id])
+  characterId     String
+  exercise        Exercise          @relation(fields: [exerciseId], references: [id])
+  exerciseId      String
+  variantRank     Rank?
+  reps            Int?
+  durationSeconds Int?
+  distanceKm      Float?
+  performedAt     DateTime          @default(now())
+  xpAwarded       Int               @default(0)
+  source          ExerciseLogSource
+
+  @@index([characterId])
+}
+
+model CharacterStats {
+  characterId         String @id
+  character           Character @relation(fields: [characterId], references: [id])
+  flexoes             Int    @default(0)
+  agachamentos        Int    @default(0)
+  abdominais          Int    @default(0)
+  km                  Float  @default(0)
+  exerciciosAvancados Int    @default(0)
+  bossesDerrotados    Int    @default(0)
+  missoesConcluidas   Int    @default(0)
+  vitoriasX1          Int    @default(0)
+  derrotasX1          Int    @default(0)
+  maiorStreak         Int    @default(0)
+  eventosConcluidos   Int    @default(0)
+  mortes              Int    @default(0)
+  ressurreicoes       Int    @default(0)
+  itensLendarios      Int    @default(0)
+  itensDeus           Int    @default(0)
+  maiorLevel          Int    @default(1)
+  maiorRank           Rank   @default(E)
+}
+
+model Boss {
+  id                  String            @id
+  name                String
+  rank                Rank
+  hp                  Int
+  dano                Int
+  description         String            @db.Text
+  encounterType       BossEncounterType @default(COMUM)
+  isPromotionTrialFor Rank?             @unique
+  imageUrl            String?
+
+  abilities BossAbility[]
+  battles   Battle[]
+}
+
+model BossAbility {
+  id            String @id @default(cuid())
+  boss          Boss   @relation(fields: [bossId], references: [id])
+  bossId        String
+  name          String
+  description   String @db.Text
+  effectKey     String
+  triggerChance Float  @default(0.25)
+}
+
+model LootTableEntry {
+  id     String @id @default(cuid())
+  rank   Rank
+  rarity Rarity
+  weight Int
+
+  @@unique([rank, rarity])
+}
+
+model Battle {
+  id               String       @id @default(cuid())
+  character        Character    @relation(fields: [characterId], references: [id])
+  characterId      String
+  boss             Boss         @relation(fields: [bossId], references: [id])
+  bossId           String
+  status                 BattleStatus @default(EM_ANDAMENTO)
+  currentTurn            Int          @default(1)
+  bossHpRemaining        Int
+  isPromotionTrial       Boolean      @default(false)
+  itemsSealed            Boolean      @default(false)
+  duplicateNextChallenge Boolean      @default(false)
+  startedAt        DateTime     @default(now())
+  endedAt          DateTime?
+
+  turns BattleTurn[]
+
+  @@index([characterId])
+}
+
+model BattleTurn {
+  id                    String          @id @default(cuid())
+  battle                Battle          @relation(fields: [battleId], references: [id])
+  battleId              String
+  turnNumber            Int
+  exercise              Exercise        @relation(fields: [exerciseId], references: [id])
+  exerciseId            String
+  targetReps            Int
+  repsCompleted         Int
+  timeLimitSeconds      Int
+  timeRemainingSeconds  Int
+  performanceTier       PerformanceTier
+  playerDamageDealt     Int
+  bossDamageDealt       Int
+  bossAbilityUsed       String?
+  logText               String          @db.Text
+  createdAt             DateTime        @default(now())
+
+  @@index([battleId])
+}
+
+model Skill {
+  id                String  @id
+  name              String
+  description       String  @db.Text
+  effect            String  @db.Text
+  cost              String
+  cooldown          String
+  duration          String?
+  awakenedCondition String  @db.Text
+  icon              String
+  isSecret          Boolean @default(true)
+
+  discoveredBy CharacterSkill[]
+}
+
+model CharacterSkill {
+  id            String   @id @default(cuid())
+  character     Character @relation(fields: [characterId], references: [id])
+  characterId   String
+  skill         Skill     @relation(fields: [skillId], references: [id])
+  skillId       String
+  discoveredAt  DateTime  @default(now())
+
+  @@unique([characterId, skillId])
+}
+
+model Achievement {
+  id           String @id
+  name         String
+  description  String @db.Text
+  icon         String
+  conditionKey String
+
+  unlockedBy CharacterAchievement[]
+}
+
+model CharacterAchievement {
+  id            String      @id @default(cuid())
+  character     Character   @relation(fields: [characterId], references: [id])
+  characterId   String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([characterId, achievementId])
+}
+
+model Title {
+  id          String @id
+  name        String
+  description String @db.Text
+
+  unlockedBy      CharacterTitle[]
+  equippedByChars Character[]
+}
+
+model CharacterTitle {
+  id          String   @id @default(cuid())
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+  title       Title     @relation(fields: [titleId], references: [id])
+  titleId     String
+  unlockedAt  DateTime  @default(now())
+
+  @@unique([characterId, titleId])
+}
+
+model GameEvent {
+  id          String   @id
+  title       String
+  category    String
+  description String   @db.Text
+  rarity      Rarity
+  startsAt    DateTime @default(now())
+  endsAt      DateTime?
+  active      Boolean  @default(true)
+}
+
+model ShopListing {
+  id                   String  @id
+  name                 String
+  rarity               Rarity
+  price                Int
+  exclusive            Boolean @default(false)
+  oneTimePerCharacter  Boolean @default(true)
+  item                 Item?   @relation(fields: [itemId], references: [id])
+  itemId               String?
+  icon                 String
+  description          String  @db.Text
+  active               Boolean @default(true)
+
+  purchases ShopPurchase[]
+}
+
+model ShopPurchase {
+  id            String      @id @default(cuid())
+  character     Character   @relation(fields: [characterId], references: [id])
+  characterId   String
+  listing       ShopListing @relation(fields: [listingId], references: [id])
+  listingId     String
+  purchasedAt   DateTime    @default(now())
+  priceSnapshot Int
+
+  @@index([characterId])
+}
+
+model Duel {
+  id              String     @id @default(cuid())
+  challenger      Character  @relation("duelChallenger", fields: [challengerId], references: [id])
+  challengerId    String
+  opponent        Character  @relation("duelOpponent", fields: [opponentId], references: [id])
+  opponentId      String
+  exercise        Exercise   @relation(fields: [exerciseId], references: [id])
+  exerciseId      String
+  targetSeconds   Int        @default(45)
+  status          DuelStatus @default(PENDENTE)
+  challengerScore Int?
+  opponentScore   Int?
+  winner          Character? @relation("duelWinner", fields: [winnerId], references: [id])
+  winnerId        String?
+  createdAt       DateTime   @default(now())
+  respondedAt     DateTime?
+  resolvedAt      DateTime?
+
+  @@index([challengerId])
+  @@index([opponentId])
+}
+
+model DeathRecord {
+  id        String   @id @default(cuid())
+  character Character @relation(fields: [characterId], references: [id])
+  characterId String
+  diedAt    DateTime @default(now())
+  cause     String
+  level     Int
+  rank      Rank
+  revivedAt DateTime?
+}

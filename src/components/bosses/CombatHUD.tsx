@@ -1,5 +1,5 @@
-import { Flask, Hourglass, Lightning, Target } from "@phosphor-icons/react"
 import { motion } from "motion/react"
+import type { ReactNode } from "react"
 import { HPBar } from "@/components/hud/HPBar"
 import { RankBadge } from "@/components/hud/RankBadge"
 import { SystemPanel } from "@/components/system/SystemPanel"
@@ -13,32 +13,12 @@ interface CombatHUDProps {
   playerHp: number
   playerHpMax: number
   turn: number
-  challenge: string
-  timeLabel: string
+  challengeTitle: string
   log: string[]
-  resolving: boolean
-  finished: boolean
-  onComplete: () => void
-  onUseSkill: () => void
-  onUseItem: () => void
+  children: ReactNode
 }
 
-export function CombatHUD({
-  boss,
-  bossHp,
-  playerName,
-  playerHp,
-  playerHpMax,
-  turn,
-  challenge,
-  timeLabel,
-  log,
-  resolving,
-  finished,
-  onComplete,
-  onUseSkill,
-  onUseItem,
-}: CombatHUDProps) {
+export function CombatHUD({ boss, bossHp, playerName, playerHp, playerHpMax, turn, challengeTitle, log, children }: CombatHUDProps) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
       <div className="space-y-4">
@@ -68,44 +48,11 @@ export function CombatHUD({
               <span className="font-display text-xs font-bold tracking-[0.24em] text-system uppercase">
                 Turno {String(turn).padStart(2, "0")}
               </span>
-              <span className="flex items-center gap-1.5 font-mono text-xs text-ink-secondary">
-                <Hourglass size={14} />
-                {timeLabel}
-              </span>
             </div>
-            <p className="font-display text-2xl font-bold text-ink-primary sm:text-3xl">{challenge}</p>
+            <p className="mb-5 font-display text-2xl font-bold text-ink-primary sm:text-3xl">{challengeTitle}</p>
+            {children}
           </SystemPanel>
         </motion.div>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={onComplete}
-            disabled={resolving || finished}
-            className="flex items-center gap-2 border border-system bg-system/10 px-5 py-3 font-display text-sm font-semibold tracking-wide text-system uppercase transition-colors hover:bg-system/20 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Target size={16} weight="bold" />
-            {resolving ? "Resolvendo..." : "Completar Desafio"}
-          </button>
-          <button
-            type="button"
-            onClick={onUseSkill}
-            disabled={resolving || finished}
-            className="flex items-center gap-2 border border-surface-border-strong bg-surface-1 px-5 py-3 font-display text-sm font-semibold tracking-wide text-ink-secondary uppercase transition-colors hover:text-ink-primary disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Lightning size={16} />
-            Habilidade
-          </button>
-          <button
-            type="button"
-            onClick={onUseItem}
-            disabled={resolving || finished}
-            className="flex items-center gap-2 border border-surface-border-strong bg-surface-1 px-5 py-3 font-display text-sm font-semibold tracking-wide text-ink-secondary uppercase transition-colors hover:text-ink-primary disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Flask size={16} />
-            Item
-          </button>
-        </div>
       </div>
 
       <div className="space-y-4">

@@ -1,15 +1,37 @@
 import { GearSix } from "@phosphor-icons/react"
 import { useState } from "react"
+import type { Skill } from "@/data/types"
+import { trpc } from "@/lib/trpc"
 import { useGameStore } from "@/store/useGameStore"
 import { Modal } from "./Modal"
 import { SystemPanel } from "./SystemPanel"
 
 export function DiagnosticsPanel() {
   const [open, setOpen] = useState(false)
-  const triggerLevelUp = useGameStore((state) => state.triggerLevelUp)
-  const triggerRankUp = useGameStore((state) => state.triggerRankUp)
-  const triggerAwakening = useGameStore((state) => state.triggerAwakening)
-  const triggerDeath = useGameStore((state) => state.triggerDeath)
+  const pushOverlay = useGameStore((state) => state.pushOverlay)
+  const utils = trpc.useUtils()
+
+  const invalidateCharacter = () => {
+    utils.character.getActive.invalidate()
+    utils.character.getLastDead.invalidate()
+    utils.stats.get.invalidate()
+  }
+
+  const grantXp = trpc.dev.grantXp.useMutation({
+    onSuccess: (result) => {
+      invalidateCharacter()
+      if (result.leveledUp) pushOverlay({ type: "levelUp", from: result.fromLevel, to: result.toLevel })
+    },
+  })
+
+  const awaken = trpc.dev.awaken.useMutation({
+    onSuccess: (skill) => {
+      utils.skills.discovered.invalidate()
+      pushOverlay({ type: "awakening", skill: skill as Skill })
+    },
+  })
+
+  const simulateDeath = trpc.dev.simulateDeath.useMutation({ onSuccess: invalidateCharacter })
 
   function run(action: () => void) {
     action()
@@ -30,14 +52,13 @@ export function DiagnosticsPanel() {
       <Modal open={open} onClose={() => setOpen(false)}>
         <SystemPanel label="Diagnóstico do Sistema" className="p-5">
           <p className="mb-4 text-xs leading-relaxed text-ink-tertiary">
-            Painel de demonstração. Simula eventos que normalmente exigem progresso real, para visualizar as
-            sequências cinematográficas do Sistema.
+            Painel de demonstração. As ações abaixo são reais e persistidas: concedem XP de verdade, despertam uma
+            habilidade real ou encerram o personagem de verdade.
           </p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <DiagButton label="Simular Level Up" onClick={() => run(triggerLevelUp)} />
-            <DiagButton label="Simular Rank Up" onClick={() => run(triggerRankUp)} />
-            <DiagButton label="Simular Despertar" onClick={() => run(triggerAwakening)} />
-            <DiagButton label="Simular Morte" onClick={() => run(triggerDeath)} tone="danger" />
+            <DiagButton label="Conceder 500 XP" onClick={() => run(() => grantXp.mutate({ amount: 500 }))} />
+            <DiagButton label="Despertar Próxima Habilidade" onClick={() => run(() => awaken.mutate())} />
+            <DiagButton label="Simular Morte" onClick={() => run(() => simulateDeath.mutate())} tone="danger" />
           </div>
         </SystemPanel>
       </Modal>

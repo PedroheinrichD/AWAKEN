@@ -1,14 +1,16 @@
 import { Flame } from "@phosphor-icons/react"
-import { TITLES } from "@/data/titles"
-import { useGameStore } from "@/store/useGameStore"
+import { trpc } from "@/lib/trpc"
 import { HPBar } from "./HPBar"
 import { LevelBadge } from "./LevelBadge"
 import { RankBadge } from "./RankBadge"
 import { XPBar } from "./XPBar"
 
 export function PlayerHUD() {
-  const character = useGameStore((state) => state.character)
-  const equippedTitle = TITLES.find((title) => title.id === character.equippedTitle)
+  const { data: character } = trpc.character.getActive.useQuery()
+  const { data: titles } = trpc.titles.unlocked.useQuery()
+  const equippedTitle = titles?.find((title) => title.equipped)
+
+  if (!character) return null
 
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-surface-border bg-surface-0/95 px-4 py-3 backdrop-blur sm:px-6">

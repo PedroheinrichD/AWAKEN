@@ -1,10 +1,17 @@
+import { Medal } from "@phosphor-icons/react"
 import { TitleCard } from "@/components/rpg/TitleCard"
-import { TITLES } from "@/data/titles"
-import { useGameStore } from "@/store/useGameStore"
+import { EmptyState } from "@/components/system/EmptyState"
+import { trpc } from "@/lib/trpc"
 
 export function TitlesScreen() {
-  const equippedTitle = useGameStore((state) => state.character.equippedTitle)
-  const equipTitle = useGameStore((state) => state.equipTitle)
+  const utils = trpc.useUtils()
+  const { data: titles } = trpc.titles.unlocked.useQuery()
+  const equipTitle = trpc.character.equipTitle.useMutation({
+    onSuccess: () => {
+      utils.titles.unlocked.invalidate()
+      utils.character.getActive.invalidate()
+    },
+  })
 
   return (
     <div className="space-y-6">
@@ -13,16 +20,20 @@ export function TitlesScreen() {
         <h1 className="mt-1 font-display text-2xl font-bold text-ink-primary">Títulos</h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {TITLES.map((title) => (
-          <TitleCard
-            key={title.id}
-            title={title}
-            equipped={equippedTitle === title.id}
-            onEquip={() => equipTitle(title.id)}
-          />
-        ))}
-      </div>
+      {!titles || titles.length === 0 ? (
+        <EmptyState icon={Medal} title="Nenhum Título Conquistado" message="Títulos são concedidos por feitos registrados na jornada." />
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {titles.map((title) => (
+            <TitleCard
+              key={title.id}
+              title={title}
+              equipped={title.equipped}
+              onEquip={() => equipTitle.mutate({ titleId: title.id })}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

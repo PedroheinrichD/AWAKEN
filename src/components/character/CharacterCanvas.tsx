@@ -1,12 +1,20 @@
-import { getItem } from "@/data/items"
-import type { CharacterAppearance, EquipmentSlotKey } from "@/data/types"
+import type { CharacterAppearance, EquipmentSlotKey, IconKey } from "@/data/types"
 import { ICON_MAP } from "@/lib/icons"
 import { RARITY_CONFIG } from "@/lib/rarity"
+import type { Rarity } from "@/lib/rarity"
 import { cn } from "@/lib/utils"
+
+interface CanvasItem {
+  id: string
+  name: string
+  icon: IconKey
+  rarity: Rarity
+}
 
 interface CharacterCanvasProps {
   appearance: CharacterAppearance
   equipment?: Partial<Record<EquipmentSlotKey, string>>
+  items?: CanvasItem[]
   showCallouts?: boolean
   className?: string
 }
@@ -39,7 +47,7 @@ const SLOT_ORDER: EquipmentSlotKey[] = [
   "acessorio2",
 ]
 
-export function CharacterCanvas({ appearance, equipment = {}, showCallouts = true, className }: CharacterCanvasProps) {
+export function CharacterCanvas({ appearance, equipment = {}, items = [], showCallouts = true, className }: CharacterCanvasProps) {
   const scale = BODY_SCALE[appearance.bodyType]
 
   const leftBadges = SLOT_ORDER.filter((slot) => ANCHORS[slot].side === "left")
@@ -107,8 +115,8 @@ export function CharacterCanvas({ appearance, equipment = {}, showCallouts = tru
 
       {showCallouts ? (
         <>
-          <CalloutColumn slots={leftBadges} equipment={equipment} align="left" />
-          <CalloutColumn slots={rightBadges} equipment={equipment} align="right" />
+          <CalloutColumn slots={leftBadges} equipment={equipment} items={items} align="left" />
+          <CalloutColumn slots={rightBadges} equipment={equipment} items={items} align="right" />
         </>
       ) : null}
     </div>
@@ -140,10 +148,12 @@ function HairShape({ style, color }: { style: CharacterAppearance["hairStyle"]; 
 function CalloutColumn({
   slots,
   equipment,
+  items,
   align,
 }: {
   slots: EquipmentSlotKey[]
   equipment: Partial<Record<EquipmentSlotKey, string>>
+  items: CanvasItem[]
   align: "left" | "right"
 }) {
   return (
@@ -155,7 +165,7 @@ function CalloutColumn({
     >
       {slots.map((slot) => {
         const itemId = equipment[slot]
-        const item = itemId ? getItem(itemId) : undefined
+        const item = itemId ? items.find((candidate) => candidate.id === itemId) : undefined
         const Icon = item ? ICON_MAP[item.icon] : ICON_MAP.scroll
         const rarityColor = item ? `var(--color-${RARITY_CONFIG[item.rarity].slug})` : "var(--color-ink-disabled)"
         const anchor = ANCHORS[slot]

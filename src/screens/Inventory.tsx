@@ -2,11 +2,10 @@ import { useState } from "react"
 import { ItemCard } from "@/components/rpg/ItemCard"
 import { InventoryGrid } from "@/components/rpg/InventoryGrid"
 import { EmptyState } from "@/components/system/EmptyState"
-import { ITEMS } from "@/data/items"
 import type { ItemCategory } from "@/data/types"
 import { meetsRequirements } from "@/lib/requirements"
+import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
-import { useGameStore } from "@/store/useGameStore"
 
 const CONSUMABLE_CATEGORIES: ItemCategory[] = ["item", "pocao", "itemMagico"]
 
@@ -21,13 +20,13 @@ const CATEGORY_LABELS: Record<"todos" | ItemCategory, string> = {
   acessorio: "Acessórios",
 }
 
-const CONSUMABLE_ITEMS = ITEMS.filter((item) => CONSUMABLE_CATEGORIES.includes(item.category))
-
 export function InventoryScreen() {
   const [filter, setFilter] = useState<"todos" | ItemCategory>("todos")
-  const character = useGameStore((state) => state.character)
+  const { data: character } = trpc.character.getActive.useQuery()
+  const { data: inventory } = trpc.items.inventory.useQuery()
 
-  const visibleItems = CONSUMABLE_ITEMS.filter((item) => filter === "todos" || item.category === filter)
+  const consumables = (inventory ?? []).filter((item) => CONSUMABLE_CATEGORIES.includes(item.category))
+  const visibleItems = consumables.filter((item) => filter === "todos" || item.category === filter)
 
   return (
     <div className="space-y-6">
@@ -59,7 +58,7 @@ export function InventoryScreen() {
       ) : (
         <InventoryGrid>
           {visibleItems.map((item) => (
-            <ItemCard key={item.id} item={item} locked={!meetsRequirements(character, item)} />
+            <ItemCard key={item.id} item={item} locked={character ? !meetsRequirements(character, item) : false} />
           ))}
         </InventoryGrid>
       )}

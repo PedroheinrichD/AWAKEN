@@ -2,33 +2,40 @@ import { useState } from "react"
 import { CharacterCanvas } from "@/components/character/CharacterCanvas"
 import { CustomizationControls } from "@/components/character/CustomizationControls"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { INITIAL_CHARACTER } from "@/data/character"
 import type { CharacterAppearance } from "@/data/types"
 import { gsap, prefersReducedMotion } from "@/lib/gsap"
+import { trpc } from "@/lib/trpc"
 import { useGsapContext } from "@/lib/useGsapContext"
 import { cn } from "@/lib/utils"
-import { useGameStore } from "@/store/useGameStore"
 
 type Step = "identity" | "appearance" | "awakening"
 
+const DEFAULT_APPEARANCE: CharacterAppearance = {
+  skinTone: "#c68a5e",
+  hairStyle: "curto",
+  hairColor: "#1c1a19",
+  eyeColor: "#4cc9f0",
+  bodyType: "atletico",
+}
+
 export function CharacterCreateScreen() {
-  const isDead = useGameStore((state) => state.isDead)
-  const createCharacter = useGameStore((state) => state.createCharacter)
-  const reviveWithNewCharacter = useGameStore((state) => state.reviveWithNewCharacter)
+  const utils = trpc.useUtils()
+  const createCharacter = trpc.character.create.useMutation({
+    onSuccess: () => utils.character.getActive.invalidate(),
+  })
 
   const [step, setStep] = useState<Step>("identity")
   const [name, setName] = useState("")
-  const [appearance, setAppearance] = useState<CharacterAppearance>(INITIAL_CHARACTER.appearance)
+  const [appearance, setAppearance] = useState<CharacterAppearance>(DEFAULT_APPEARANCE)
 
   const finalName = name.trim() || "Caçador Sem Nome"
 
   function finalize() {
-    if (isDead) reviveWithNewCharacter(finalName, appearance)
-    else createCharacter(finalName, appearance)
+    createCharacter.mutate({ name: finalName, appearance })
   }
 
   if (step === "awakening") {
-    return <AwakeningWelcome name={finalName} onEnter={finalize} />
+    return <AwakeningWelcome name={finalName} onEnter={finalize} pending={createCharacter.isPending} />
   }
 
   return (
@@ -106,7 +113,7 @@ export function CharacterCreateScreen() {
   )
 }
 
-function AwakeningWelcome({ name, onEnter }: { name: string; onEnter: () => void }) {
+function AwakeningWelcome({ name, onEnter, pending }: { name: string; onEnter: () => void; pending: boolean }) {
   const scope = useGsapContext<HTMLDivElement>(() => {
     const tl = gsap.timeline()
     tl.from(".welcome-label", { autoAlpha: 0, y: 10, duration: 0.6 })
@@ -132,9 +139,10 @@ function AwakeningWelcome({ name, onEnter }: { name: string; onEnter: () => void
       <button
         type="button"
         onClick={onEnter}
-        className="welcome-cta mt-2 border border-system bg-system/10 px-8 py-3 font-display text-sm font-bold tracking-[0.3em] text-system uppercase transition-colors hover:bg-system/20"
+        disabled={pending}
+        className="welcome-cta mt-2 border border-system bg-system/10 px-8 py-3 font-display text-sm font-bold tracking-[0.3em] text-system uppercase transition-colors hover:bg-system/20 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Entrar no Mundo
+        {pending ? "Sincronizando..." : "Entrar no Mundo"}
       </button>
     </div>
   )

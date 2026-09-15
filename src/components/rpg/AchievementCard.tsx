@@ -1,5 +1,6 @@
 import type { Achievement } from "@/data/types"
 import { ICON_MAP } from "@/lib/icons"
+import { formatRelativeTime } from "@/lib/utils"
 
 interface AchievementCardProps {
   achievement: Achievement
@@ -16,7 +17,7 @@ export function AchievementCard({ achievement }: AchievementCardProps) {
       <div className="min-w-0 flex-1">
         <p className="font-display text-sm font-semibold text-ink-primary">{achievement.name}</p>
         <p className="mt-1 text-xs leading-relaxed text-ink-secondary">{achievement.description}</p>
-        <p className="mt-2 font-mono text-[10px] text-ink-tertiary">{achievement.unlockedAt}</p>
+        <p className="mt-2 font-mono text-[10px] text-ink-tertiary">{formatRelativeTime(achievement.unlockedAt)}</p>
       </div>
     </div>
   )

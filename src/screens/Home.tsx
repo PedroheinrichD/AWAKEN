@@ -10,26 +10,29 @@ import { EventCard } from "@/components/events/EventCard"
 import { EmptyState } from "@/components/system/EmptyState"
 import { SystemNotification } from "@/components/system/SystemNotification"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { getTodaysBoss } from "@/data/bosses"
-import { EVENTS } from "@/data/events"
-import { MISSIONS } from "@/data/missions"
-import { JOURNEY_STATS } from "@/data/stats"
-import { TITLES } from "@/data/titles"
-import { useGameStore } from "@/store/useGameStore"
+import { trpc } from "@/lib/trpc"
 
 export function HomeScreen() {
-  const character = useGameStore((state) => state.character)
-  const equippedTitle = TITLES.find((title) => title.id === character.equippedTitle)
-  const activeEvents = EVENTS.filter((event) => event.active)
-  const todaysBoss = getTodaysBoss()
-  const dailyMissions = MISSIONS.filter((mission) => mission.type === "diaria")
+  const { data: character } = trpc.character.getActive.useQuery()
+  const { data: titles } = trpc.titles.unlocked.useQuery()
+  const { data: events } = trpc.events.list.useQuery()
+  const { data: missions } = trpc.missions.listToday.useQuery()
+  const { data: todaysBoss } = trpc.bosses.today.useQuery()
+  const { data: stats } = trpc.stats.get.useQuery()
+  const { data: inventory } = trpc.items.inventory.useQuery()
+
+  if (!character) return null
+
+  const equippedTitle = titles?.find((title) => title.equipped)
+  const activeEvents = events?.filter((event) => event.active) ?? []
+  const dailyMissions = missions?.filter((mission) => mission.type === "diaria") ?? []
   const completedToday = dailyMissions.filter((mission) => mission.completed).length
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.05fr_1fr]">
         <SystemPanel accent="system" className="flex flex-col items-center p-6 text-center">
-          <CharacterCanvas appearance={character.appearance} equipment={character.equipment} className="h-72 w-full" />
+          <CharacterCanvas appearance={character.appearance} equipment={character.equipment} items={inventory} className="h-72 w-full" />
           <p className="mt-2 font-display text-2xl font-bold text-ink-primary">{character.name}</p>
           <p className="text-sm text-system">{equippedTitle ? equippedTitle.name : "Sem título equipado"}</p>
           <div className="mt-4 flex items-center gap-4">
@@ -52,7 +55,7 @@ export function HomeScreen() {
             <StatusStrip
               chips={[
                 { icon: Flame, label: "Streak", value: `${character.streak} dias`, tone: "gold" },
-                { icon: Skull, label: "Bosses Derrotados", value: String(JOURNEY_STATS.bossesDerrotados) },
+                { icon: Skull, label: "Bosses Derrotados", value: String(stats?.bossesDerrotados ?? 0) },
                 {
                   icon: ClipboardText,
                   label: "Missões Hoje",
@@ -67,24 +70,20 @@ export function HomeScreen() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SystemPanel label="Notificações do Sistema" className="p-5">
           <div className="divide-y divide-surface-border/60">
-            <SystemNotification
-              icon="skull"
-              title="Boss detectado"
-              message={`${todaysBoss.name} foi localizado nas proximidades.`}
-              tone="danger"
-              meta={todaysBoss.rank}
-            />
+            {todaysBoss ? (
+              <SystemNotification
+                icon="skull"
+                title="Boss detectado"
+                message={`${todaysBoss.name} foi localizado nas proximidades.`}
+                tone="danger"
+                meta={todaysBoss.rank}
+              />
+            ) : null}
             <SystemNotification
               icon="flame"
-              title="Sequência mantida"
+              title="Sequência ativa"
               message={`${character.streak} dias consecutivos de atividade registrada.`}
               tone="gold"
-            />
-            <SystemNotification
-              icon="scroll"
-              title="Missão concluída"
-              message="Corrida de 3km registrada com sucesso."
-              tone="system"
             />
           </div>
         </SystemPanel>

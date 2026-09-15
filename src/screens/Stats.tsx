@@ -1,17 +1,21 @@
 import {
   CalendarStar,
   ClipboardText,
+  Crown,
+  Diamond,
   Fire,
   Flame,
+  Heart,
   Lightning,
   Skull,
+  Sparkle,
   Trophy,
   Wind,
   XCircle,
 } from "@phosphor-icons/react"
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { JOURNEY_STATS } from "@/data/stats"
+import { trpc } from "@/lib/trpc"
 import { formatNumber } from "@/lib/utils"
 
 interface StatTile {
@@ -20,19 +24,29 @@ interface StatTile {
   value: string
 }
 
-const TILES: StatTile[] = [
-  { icon: Lightning, label: "Flexões", value: formatNumber(JOURNEY_STATS.flexoes) },
-  { icon: Wind, label: "Agachamentos", value: formatNumber(JOURNEY_STATS.agachamentos) },
-  { icon: Fire, label: "Abdominais", value: formatNumber(JOURNEY_STATS.abdominais) },
-  { icon: Skull, label: "Bosses Derrotados", value: formatNumber(JOURNEY_STATS.bossesDerrotados) },
-  { icon: ClipboardText, label: "Missões Concluídas", value: formatNumber(JOURNEY_STATS.missoesConcluidas) },
-  { icon: Trophy, label: "Vitórias em X1", value: formatNumber(JOURNEY_STATS.vitoriasX1) },
-  { icon: XCircle, label: "Derrotas em X1", value: formatNumber(JOURNEY_STATS.derrotasX1) },
-  { icon: Flame, label: "Maior Streak", value: `${JOURNEY_STATS.maiorStreak} dias` },
-  { icon: CalendarStar, label: "Eventos Concluídos", value: formatNumber(JOURNEY_STATS.eventosConcluidos) },
-]
-
 export function StatsScreen() {
+  const { data: stats } = trpc.stats.get.useQuery()
+
+  if (!stats) return null
+
+  const tiles: StatTile[] = [
+    { icon: Lightning, label: "Flexões", value: formatNumber(stats.flexoes) },
+    { icon: Wind, label: "Agachamentos", value: formatNumber(stats.agachamentos) },
+    { icon: Fire, label: "Abdominais", value: formatNumber(stats.abdominais) },
+    { icon: Skull, label: "Bosses Derrotados", value: formatNumber(stats.bossesDerrotados) },
+    { icon: ClipboardText, label: "Missões Concluídas", value: formatNumber(stats.missoesConcluidas) },
+    { icon: Trophy, label: "Vitórias em X1", value: formatNumber(stats.vitoriasX1) },
+    { icon: XCircle, label: "Derrotas em X1", value: formatNumber(stats.derrotasX1) },
+    { icon: Flame, label: "Maior Streak", value: `${stats.maiorStreak} dias` },
+    { icon: CalendarStar, label: "Eventos Concluídos", value: formatNumber(stats.eventosConcluidos) },
+    { icon: XCircle, label: "Mortes", value: formatNumber(stats.mortes) },
+    { icon: Heart, label: "Ressurreições", value: formatNumber(stats.ressurreicoes) },
+    { icon: Crown, label: "Itens Lendários", value: formatNumber(stats.itensLendarios) },
+    { icon: Sparkle, label: "Itens DEUS", value: formatNumber(stats.itensDeus) },
+    { icon: Trophy, label: "Maior Level", value: formatNumber(stats.maiorLevel) },
+    { icon: Diamond, label: "Maior Rank", value: stats.maiorRank },
+  ]
+
   return (
     <div className="space-y-6">
       <div>
@@ -42,15 +56,15 @@ export function StatsScreen() {
 
       <SystemPanel className="p-6">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-surface-border pb-4">
-          <p className="font-display text-4xl font-black text-system">{JOURNEY_STATS.km.toFixed(1)}</p>
+          <p className="font-display text-4xl font-black text-system">{stats.km.toFixed(1)}</p>
           <p className="text-sm text-ink-tertiary">km percorridos nesta jornada</p>
           <p className="ml-auto font-mono text-xs text-ink-tertiary">
-            +{JOURNEY_STATS.exerciciosAvancados} exercícios avançados registrados
+            +{stats.exerciciosAvancados} exercícios avançados registrados
           </p>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
-          {TILES.map((tile) => (
+          {tiles.map((tile) => (
             <div key={tile.label} className="flex items-start gap-2.5">
               <tile.icon size={16} weight="regular" className="mt-0.5 shrink-0 text-system" />
               <div>

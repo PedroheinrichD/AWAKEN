@@ -1,58 +1,92 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { BossEncounterIntro } from "@/components/cinematic/BossEncounterIntro"
+import { RepCounter } from "@/components/combat/RepCounter"
 import { CombatHUD } from "@/components/bosses/CombatHUD"
+import { RarityBadge } from "@/components/rpg/RarityBadge"
+import { Modal } from "@/components/system/Modal"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { BOSSES } from "@/data/bosses"
-import { ITEMS } from "@/data/items"
-import { RARITY_CONFIG } from "@/lib/rarity"
-import type { Rarity } from "@/lib/rarity"
+import { trpc } from "@/lib/trpc"
 import { useGameStore } from "@/store/useGameStore"
 
-const CHALLENGES = ["30 Flexões", "40 Agachamentos", "25 Abdominais", "Prancha por 45 segundos", "20 Burpees"]
-
-const RANK_LOOT_CEILING: Record<string, Rarity> = {
-  E: "comum",
-  D: "incomum",
-  C: "raro",
-  B: "raro",
-  A: "ultraRaro",
-  S: "lendario",
-  "S++": "deus",
+const EXERCISE_LABELS: Record<string, string> = {
+  flexao: "Flexões",
+  agachamento: "Agachamentos",
+  abdominal: "Abdominais",
+  burpee: "Burpees",
 }
 
 export function BossFightScreen() {
   const { bossId } = useParams()
   const navigate = useNavigate()
-  const character = useGameStore((state) => state.character)
-
-  const boss = BOSSES.find((entry) => entry.id === bossId)
+  const utils = trpc.useUtils()
+  const pushOverlay = useGameStore((state) => state.pushOverlay)
 
   const [showingIntro, setShowingIntro] = useState(true)
-  const [bossHp, setBossHp] = useState(boss?.hp ?? 0)
-  const [playerHp, setPlayerHp] = useState(character.hpMax)
-  const [turn, setTurn] = useState(1)
-  const [resolving, setResolving] = useState(false)
   const [log, setLog] = useState<string[]>([])
-  const [outcome, setOutcome] = useState<"vitoria" | "derrota" | null>(null)
-  const [seconds, setSeconds] = useState(60)
+  const [itemPickerOpen, setItemPickerOpen] = useState(false)
+  const [outcome, setOutcome] = useState<{ result: "vitoria" | "derrota"; lootName?: string } | null>(null)
+
+  const { data: boss } = trpc.bosses.getById.useQuery({ bossId: bossId ?? "" }, { enabled: Boolean(bossId) })
+  const { data: character } = trpc.character.getActive.useQuery()
+  const { data: activeBattle } = trpc.battle.active.useQuery()
+  const { data: inventory } = trpc.items.inventory.useQuery()
+
+  const startBattle = trpc.battle.start.useMutation({
+    onSuccess: () => utils.battle.active.invalidate(),
+  })
+
+  const battle = activeBattle && activeBattle.bossId === bossId ? activeBattle : null
+
+  const { data: pastTurns } = trpc.battle.turns.useQuery({ battleId: battle?.id ?? "" }, { enabled: Boolean(battle) })
+  const { data: challenge } = trpc.battle.currentChallenge.useQuery(
+    { battleId: battle?.id ?? "" },
+    { enabled: Boolean(battle) && battle?.status === "EM_ANDAMENTO" },
+  )
 
   useEffect(() => {
-    if (showingIntro || outcome) return
-    setSeconds(60)
-    const interval = window.setInterval(() => {
-      setSeconds((value) => (value > 0 ? value - 1 : 0))
-    }, 1000)
-    return () => window.clearInterval(interval)
-  }, [turn, showingIntro, outcome])
+    if (pastTurns) setLog([...pastTurns].reverse())
+  }, [pastTurns])
 
-  if (!boss) {
+  useEffect(() => {
+    if (!showingIntro && !activeBattle && bossId && !startBattle.isPending && !outcome) {
+      startBattle.mutate({ bossId })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showingIntro, activeBattle, bossId])
+
+  const [lastTurnResult, setLastTurnResult] = useState<{ bossHp: number; turnNumber: number } | null>(null)
+
+  const submitTurn = trpc.battle.submitTurn.useMutation({
+    onSuccess: (result) => {
+      setLog((prev) => [...result.turn.logLines, ...prev])
+      setLastTurnResult({ bossHp: result.battle.bossHp, turnNumber: result.turn.turnNumber })
+      utils.character.getActive.invalidate()
+      utils.battle.active.invalidate()
+      utils.items.inventory.invalidate()
+
+      if (result.leveledUp) pushOverlay({ type: "levelUp", from: result.fromLevel, to: result.toLevel })
+      if (result.awakenedSkill) pushOverlay({ type: "awakening", skill: result.awakenedSkill })
+
+      if (result.battle.outcome !== "em_andamento") {
+        setOutcome({ result: result.battle.outcome, lootName: result.loot?.name })
+      }
+    },
+  })
+
+  const useItem = trpc.battle.useItem.useMutation({
+    onSuccess: (result) => {
+      setLog((prev) => [`Você recuperou ${result.healed} de HP.`, ...prev])
+      utils.character.getActive.invalidate()
+      utils.items.inventory.invalidate()
+      setItemPickerOpen(false)
+    },
+  })
+
+  if (!boss || !character) {
     return (
       <SystemPanel accent="danger" className="p-8 text-center">
-        <p className="font-display text-lg text-ink-primary">Boss não encontrado</p>
-        <button type="button" onClick={() => navigate("/bosses")} className="mt-4 text-sm text-system underline">
-          Voltar para Bosses
-        </button>
+        <p className="font-display text-lg text-ink-primary">Carregando combate...</p>
       </SystemPanel>
     )
   }
@@ -61,90 +95,82 @@ export function BossFightScreen() {
     return <BossEncounterIntro boss={boss} onComplete={() => setShowingIntro(false)} />
   }
 
-  function appendLog(entry: string) {
-    setLog((prev) => [entry, ...prev].slice(0, 12))
+  if (activeBattle && activeBattle.bossId !== bossId && activeBattle.status === "EM_ANDAMENTO") {
+    return (
+      <SystemPanel accent="danger" className="space-y-4 p-8 text-center">
+        <p className="font-display text-lg text-ink-primary">Você já tem um combate em andamento.</p>
+        <button
+          type="button"
+          onClick={() => navigate(`/bosses/${activeBattle.bossId}`)}
+          className="border border-danger px-5 py-2 font-display text-xs font-semibold tracking-widest text-danger uppercase"
+        >
+          Retomar combate
+        </button>
+      </SystemPanel>
+    )
   }
 
-  function handleComplete() {
-    setResolving(true)
-    window.setTimeout(() => {
-      const damageToBoss = Math.round(boss!.hp * (0.16 + (turn % 3) * 0.03))
-      const nextBossHp = Math.max(0, bossHp - damageToBoss)
-      appendLog(`Turno ${turn}: desafio concluído. ${boss!.name} perdeu ${damageToBoss} de HP.`)
-
-      let nextPlayerHp = playerHp
-      if (nextBossHp > 0) {
-        const bossActs = Math.random() > 0.35
-        if (bossActs) {
-          const damageToPlayer = Math.round(boss!.dano * (0.7 + Math.random() * 0.6))
-          nextPlayerHp = Math.max(0, playerHp - damageToPlayer)
-          appendLog(`${boss!.name} atacou e causou ${damageToPlayer} de dano.`)
-        } else {
-          appendLog(`${boss!.name} não atacou neste turno.`)
-        }
-      }
-
-      setBossHp(nextBossHp)
-      setPlayerHp(nextPlayerHp)
-      setResolving(false)
-
-      if (nextBossHp <= 0) {
-        appendLog(`${boss!.name} foi derrotado.`)
-        setOutcome("vitoria")
-      } else if (nextPlayerHp <= 0) {
-        appendLog("Você foi derrotado neste combate.")
-        setOutcome("derrota")
-      } else {
-        setTurn((value) => value + 1)
-      }
-    }, 700)
-  }
-
-  function handleUseSkill() {
-    appendLog("Você ativou Fôlego de Ferro. Stamina parcialmente restaurada.")
-  }
-
-  function handleUseItem() {
-    appendLog("Você usou uma Poção de Vida Menor.")
-    setPlayerHp((value) => Math.min(character.hpMax, value + 40))
-  }
-
-  const lootRarityCeiling = RANK_LOOT_CEILING[boss.rank]
-  const possibleLoot = ITEMS.find((item) => item.rarity === lootRarityCeiling && !item.requirements)
+  const potions = (inventory ?? []).filter((item) => item.category === "pocao" && (item.quantity ?? 0) > 0)
+  const bossHpDisplay = battle?.bossHp ?? lastTurnResult?.bossHp ?? boss.hp
+  const turnDisplay = battle?.currentTurn ?? lastTurnResult?.turnNumber ?? 1
 
   return (
     <div className="space-y-6">
-      <CombatHUD
-        boss={boss}
-        bossHp={bossHp}
-        playerName={character.name}
-        playerHp={playerHp}
-        playerHpMax={character.hpMax}
-        turn={turn}
-        challenge={CHALLENGES[(turn - 1) % CHALLENGES.length]}
-        timeLabel={`00:${String(seconds).padStart(2, "0")}`}
-        log={log}
-        resolving={resolving}
-        finished={outcome !== null}
-        onComplete={handleComplete}
-        onUseSkill={handleUseSkill}
-        onUseItem={handleUseItem}
-      />
+      {battle || lastTurnResult ? (
+        <CombatHUD
+          boss={boss}
+          bossHp={bossHpDisplay}
+          playerName={character.name}
+          playerHp={character.hp}
+          playerHpMax={character.hpMax}
+          turn={turnDisplay}
+          challengeTitle={challenge ? `${challenge.target} ${EXERCISE_LABELS[challenge.exerciseId] ?? challenge.exerciseId}` : "Aguardando..."}
+          log={log}
+        >
+          {outcome ? (
+            <p className="text-sm text-ink-tertiary">Combate encerrado.</p>
+          ) : challenge && battle ? (
+            <div className="space-y-4">
+              {challenge.itemsSealed ? (
+                <p className="font-mono text-xs text-danger uppercase">Selo Arcano ativo: itens bloqueados neste turno.</p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setItemPickerOpen(true)}
+                  disabled={potions.length === 0}
+                  className="font-mono text-xs text-system underline-offset-2 hover:underline disabled:text-ink-disabled disabled:no-underline"
+                >
+                  Usar poção
+                </button>
+              )}
+              <RepCounter
+                key={battle.currentTurn}
+                target={challenge.target}
+                timeLimitSeconds={challenge.timeLimitSeconds}
+                disabled={submitTurn.isPending}
+                onSubmit={(reps, timeRemaining) =>
+                  submitTurn.mutate({ battleId: battle.id, repsCompleted: reps, timeRemainingSeconds: timeRemaining })
+                }
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-ink-tertiary">Preparando desafio...</p>
+          )}
+        </CombatHUD>
+      ) : null}
 
       {outcome ? (
-        <SystemPanel accent={outcome === "vitoria" ? "system" : "danger"} className="p-6 text-center">
-          <p className={outcome === "vitoria" ? "font-display text-3xl font-bold text-system" : "font-display text-3xl font-bold text-danger"}>
-            {outcome === "vitoria" ? "VITÓRIA" : "DERROTA"}
+        <SystemPanel accent={outcome.result === "vitoria" ? "system" : "danger"} className="p-6 text-center">
+          <p className={outcome.result === "vitoria" ? "font-display text-3xl font-bold text-system" : "font-display text-3xl font-bold text-danger"}>
+            {outcome.result === "vitoria" ? "VITÓRIA" : "DERROTA"}
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-ink-secondary">
-            {outcome === "vitoria"
-              ? `${boss.name} foi subjugado. O Sistema avalia possíveis recompensas.`
-              : "O combate terminou antes do previsto. Não houve perda permanente: apenas X1 nunca causa morte, mas Bosses reais exigem cautela real."}
+            {outcome.result === "vitoria"
+              ? `${boss.name} foi subjugado.`
+              : "O HP chegou a zero. Esta jornada chegou ao fim."}
           </p>
-          {outcome === "vitoria" && possibleLoot ? (
-            <p className="mt-4 font-mono text-xs" style={{ color: `var(--color-${RARITY_CONFIG[possibleLoot.rarity].slug})` }}>
-              Possível recompensa: {possibleLoot.name}
-            </p>
+          {outcome.lootName ? (
+            <p className="mt-4 font-mono text-xs text-gold">Recompensa: {outcome.lootName}</p>
           ) : null}
           <button
             type="button"
@@ -155,6 +181,25 @@ export function BossFightScreen() {
           </button>
         </SystemPanel>
       ) : null}
+
+      <Modal open={itemPickerOpen} onClose={() => setItemPickerOpen(false)}>
+        <SystemPanel label="Usar Poção" className="space-y-2 p-5">
+          {potions.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => battle && useItem.mutate({ battleId: battle.id, itemId: item.id })}
+              className="flex w-full items-center justify-between border border-surface-border-strong px-3 py-2.5 text-left hover:border-system"
+            >
+              <span className="text-sm text-ink-primary">{item.name}</span>
+              <span className="flex items-center gap-2">
+                <RarityBadge rarity={item.rarity} />
+                <span className="font-mono text-xs text-ink-tertiary">x{item.quantity}</span>
+              </span>
+            </button>
+          ))}
+        </SystemPanel>
+      </Modal>
     </div>
   )
 }

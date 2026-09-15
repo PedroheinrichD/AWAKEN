@@ -1,6 +1,16 @@
-import type { Skill } from "./types"
+export interface SkillSeed {
+  id: string
+  name: string
+  description: string
+  effect: string
+  cost: string
+  cooldown: string
+  duration?: string
+  awakenedCondition: string
+  icon: string
+}
 
-export const DISCOVERED_SKILLS: Skill[] = [
+export const SKILLS: SkillSeed[] = [
   {
     id: "folego-de-ferro",
     name: "Fôlego de Ferro",
@@ -32,10 +42,6 @@ export const DISCOVERED_SKILLS: Skill[] = [
     awakenedCondition: "Despertada ao sobreviver a um combate com menos de 5% de HP restante.",
     icon: "heart",
   },
-]
-
-// Nunca renderizar diretamente: só chega à UI via triggerAwakening, quando uma condição secreta é cumprida.
-export const HIDDEN_SKILL_POOL: Skill[] = [
   {
     id: "erga-se",
     name: "Erga-se",
@@ -57,9 +63,3 @@ export const HIDDEN_SKILL_POOL: Skill[] = [
     icon: "skull",
   },
 ]
-
-const ALL_SKILLS = [...DISCOVERED_SKILLS, ...HIDDEN_SKILL_POOL]
-
-export function getSkillById(id: string): Skill | undefined {
-  return ALL_SKILLS.find((skill) => skill.id === id)
-}

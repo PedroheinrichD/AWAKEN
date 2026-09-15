@@ -2,11 +2,10 @@ import { useState } from "react"
 import { ItemCard } from "@/components/rpg/ItemCard"
 import { InventoryGrid } from "@/components/rpg/InventoryGrid"
 import { EmptyState } from "@/components/system/EmptyState"
-import { ITEMS } from "@/data/items"
 import type { ItemCategory } from "@/data/types"
 import { meetsRequirements } from "@/lib/requirements"
+import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
-import { useGameStore } from "@/store/useGameStore"
 
 const EQUIPABLE_CATEGORIES: ItemCategory[] = ["arma", "armadura", "roupa", "acessorio"]
 
@@ -21,14 +20,19 @@ const CATEGORY_LABELS: Record<"todos" | ItemCategory, string> = {
   itemMagico: "Itens Mágicos",
 }
 
-const EQUIPABLE_ITEMS = ITEMS.filter((item) => EQUIPABLE_CATEGORIES.includes(item.category))
-
 export function EquipmentScreen() {
   const [filter, setFilter] = useState<"todos" | ItemCategory>("todos")
-  const character = useGameStore((state) => state.character)
-  const equipItem = useGameStore((state) => state.equipItem)
+  const utils = trpc.useUtils()
+  const { data: character } = trpc.character.getActive.useQuery()
+  const { data: inventory } = trpc.items.inventory.useQuery()
+  const equipItem = trpc.character.equipItem.useMutation({
+    onSuccess: () => {
+      utils.character.getActive.invalidate()
+    },
+  })
 
-  const visibleItems = EQUIPABLE_ITEMS.filter((item) => filter === "todos" || item.category === filter)
+  const equipable = (inventory ?? []).filter((item) => EQUIPABLE_CATEGORIES.includes(item.category))
+  const visibleItems = equipable.filter((item) => filter === "todos" || item.category === filter)
 
   return (
     <div className="space-y-6">
@@ -55,7 +59,7 @@ export function EquipmentScreen() {
         ))}
       </div>
 
-      {visibleItems.length === 0 ? (
+      {!character || visibleItems.length === 0 ? (
         <EmptyState title="Nada por aqui" message="Nenhum item desta categoria foi encontrado ainda." />
       ) : (
         <InventoryGrid>
@@ -68,7 +72,7 @@ export function EquipmentScreen() {
                 item={item}
                 locked={locked}
                 equipped={equipped}
-                onClick={item.slot ? () => equipItem(item.slot!, item.id) : undefined}
+                onClick={item.slot ? () => equipItem.mutate({ itemId: item.id }) : undefined}
               />
             )
           })}

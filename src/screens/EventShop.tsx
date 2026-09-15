@@ -1,22 +1,25 @@
 import { Coins } from "@phosphor-icons/react"
-import { useState } from "react"
 import { RarityBadge } from "@/components/rpg/RarityBadge"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { EVENT_CURRENCY_NAME, SHOP_LISTINGS } from "@/data/shop"
 import { ICON_MAP } from "@/lib/icons"
+import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
-import { useGameStore } from "@/store/useGameStore"
+
+const EVENT_CURRENCY_NAME = "Fragmentos de Evento"
 
 export function EventShopScreen() {
-  const currency = useGameStore((state) => state.currency)
-  const purchaseListing = useGameStore((state) => state.purchaseListing)
-  const [purchased, setPurchased] = useState<string[]>([])
+  const utils = trpc.useUtils()
+  const { data: character } = trpc.character.getActive.useQuery()
+  const { data: listings } = trpc.shop.listings.useQuery()
+  const purchase = trpc.shop.purchase.useMutation({
+    onSuccess: () => {
+      utils.character.getActive.invalidate()
+      utils.shop.listings.invalidate()
+      utils.items.inventory.invalidate()
+    },
+  })
 
-  function handlePurchase(id: string, price: number) {
-    if (purchased.includes(id)) return
-    const success = purchaseListing(price)
-    if (success) setPurchased((prev) => [...prev, id])
-  }
+  const currency = character?.eventCurrency ?? 0
 
   return (
     <div className="space-y-6">
@@ -33,10 +36,10 @@ export function EventShopScreen() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {SHOP_LISTINGS.map((listing) => {
+        {listings?.map((listing) => {
           const Icon = ICON_MAP[listing.icon]
-          const owned = purchased.includes(listing.id)
           const affordable = currency >= listing.price
+          const pending = purchase.isPending && purchase.variables?.listingId === listing.id
 
           return (
             <SystemPanel key={listing.id} className="flex flex-col gap-3 p-5">
@@ -57,18 +60,18 @@ export function EventShopScreen() {
               <p className="flex-1 text-xs leading-relaxed text-ink-secondary">{listing.description}</p>
               <button
                 type="button"
-                disabled={owned || !affordable}
-                onClick={() => handlePurchase(listing.id, listing.price)}
+                disabled={listing.owned || !affordable || pending}
+                onClick={() => purchase.mutate({ listingId: listing.id })}
                 className={cn(
                   "flex items-center justify-center gap-2 border py-2.5 font-display text-xs font-semibold tracking-[0.15em] uppercase transition-colors",
-                  owned
+                  listing.owned
                     ? "border-system/40 text-system"
                     : affordable
                       ? "border-gold bg-gold/10 text-gold hover:bg-gold/20"
                       : "cursor-not-allowed border-surface-border text-ink-disabled",
                 )}
               >
-                {owned ? (
+                {listing.owned ? (
                   "Adquirido"
                 ) : (
                   <>

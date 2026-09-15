@@ -2,7 +2,7 @@ import { CalendarStar, Compass, MapPin as MapPinIcon, Skull, Sparkle } from "@ph
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { getTodaysBoss } from "@/data/bosses"
+import { trpc } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
 
 type PinType = "boss" | "portal" | "evento" | "local"
@@ -31,11 +31,13 @@ const PIN_COLOR: Record<PinType, string> = {
 }
 
 export function MapScreen() {
-  const todaysBoss = getTodaysBoss()
+  const { data: todaysBoss } = trpc.bosses.today.useQuery()
   const [selected, setSelected] = useState<string | null>(null)
 
   const pins: MapPin[] = [
-    { id: "p1", type: "boss", label: todaysBoss.name, x: 62, y: 36, detail: `Boss Rank ${todaysBoss.rank} avistado nesta região.` },
+    ...(todaysBoss
+      ? [{ id: "p1", type: "boss" as const, label: todaysBoss.name, x: 62, y: 36, detail: `Boss Rank ${todaysBoss.rank} avistado nesta região.` }]
+      : []),
     { id: "p2", type: "portal", label: "Portal Instável", x: 26, y: 54, detail: "Uma fenda instável foi detectada nas proximidades." },
     { id: "p3", type: "evento", label: "Caça ao Tesouro", x: 76, y: 68, detail: "Pistas espalhadas pela região sob luz cheia." },
     { id: "p4", type: "local", label: "Santuário Abandonado", x: 45, y: 20, detail: "Um local especial. Ninguém sabe o que há dentro." },

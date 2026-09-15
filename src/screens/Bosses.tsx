@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { BossCard } from "@/components/bosses/BossCard"
 import { SystemPanel } from "@/components/system/SystemPanel"
-import { BOSSES, getTodaysBoss } from "@/data/bosses"
+import { trpc } from "@/lib/trpc"
 import { RANK_ORDER } from "@/lib/rank"
 import type { Rank } from "@/lib/rank"
 import { cn } from "@/lib/utils"
@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils"
 export function BossesScreen() {
   const [filter, setFilter] = useState<"todos" | Rank>("todos")
   const navigate = useNavigate()
-  const todaysBoss = useMemo(() => getTodaysBoss(), [])
+  const { data: bosses } = trpc.bosses.list.useQuery()
+  const { data: todaysBoss } = trpc.bosses.today.useQuery()
 
-  const visibleBosses = BOSSES.filter((boss) => filter === "todos" || boss.rank === filter)
+  const visibleBosses = (bosses ?? []).filter((boss) => filter === "todos" || boss.rank === filter)
 
   return (
     <div className="space-y-6">
@@ -21,9 +22,11 @@ export function BossesScreen() {
         <h1 className="mt-1 font-display text-2xl font-bold text-ink-primary">Bosses</h1>
       </div>
 
-      <SystemPanel accent="danger" label="Boss do Dia" className="p-5">
-        <BossCard boss={todaysBoss} highlight onClick={() => navigate(`/bosses/${todaysBoss.id}`)} />
-      </SystemPanel>
+      {todaysBoss ? (
+        <SystemPanel accent="danger" label="Boss do Dia" className="p-5">
+          <BossCard boss={todaysBoss} highlight onClick={() => navigate(`/bosses/${todaysBoss.id}`)} />
+        </SystemPanel>
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         {(["todos", ...RANK_ORDER] as const).map((rank) => (
