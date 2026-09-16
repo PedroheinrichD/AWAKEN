@@ -6,12 +6,12 @@ Transforme sua vida real em um RPG. Ver `claude.md` para a visão completa do pr
 
 - **Frontend**: React + Vite + TypeScript + Tailwind CSS v4, tRPC/React Query, Zustand (estado de UI), GSAP/Lenis/Framer Motion.
 - **Backend**: Node + Express + tRPC.
-- **Banco**: MySQL/MariaDB via Prisma ORM (driver adapter `@prisma/adapter-mariadb`).
+- **Banco**: PostgreSQL via Prisma ORM (driver adapter `@prisma/adapter-pg`). Hospedado no Supabase; o app conecta pela transaction pooler (porta 6543) e as migrations rodam pela session pooler (porta 5432, `DIRECT_URL`).
 
 ## Pré-requisitos
 
 - Node.js 20+
-- Um servidor MySQL/MariaDB acessível localmente (este projeto foi desenvolvido usando o MariaDB do XAMPP).
+- Um servidor PostgreSQL acessível (local ou remoto, ex: Supabase).
 
 ## Configuração
 
@@ -19,15 +19,14 @@ Transforme sua vida real em um RPG. Ver `claude.md` para a visão completa do pr
    ```bash
    npm install
    ```
-2. Copie `.env.example` para `.env` e ajuste `DATABASE_URL` / `JWT_SECRET` se necessário:
+2. Copie `.env.example` para `.env` e ajuste `DATABASE_URL` / `DIRECT_URL` / `JWT_SECRET` se necessário:
    ```bash
    cp .env.example .env
    ```
-3. Garanta que o MySQL/MariaDB esteja rodando e que o banco exista (ajuste o nome se mudar `DATABASE_URL`):
+3. Garanta que o Postgres esteja rodando e que o banco exista (ajuste o nome se mudar `DATABASE_URL`):
    ```sql
-   CREATE DATABASE IF NOT EXISTS awaken CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE awaken;
    ```
-   Se estiver usando o MariaDB do XAMPP e ele não estiver rodando, inicie pelo XAMPP Control Panel (ou execute `xampp/mysql_start.bat`).
 4. Rode as migrations e o seed:
    ```bash
    npm run db:migrate
