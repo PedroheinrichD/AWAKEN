@@ -1,6 +1,6 @@
 import type { Mission, MissionAssignment, PrismaClient } from "@prisma/client"
-import { MISSION_TYPE_TO_CLIENT } from "../mappers"
-import { todayDateOnly } from "../utils/date"
+import { MISSION_TYPE_TO_CLIENT } from "../mappers.js"
+import { todayDateOnly } from "../utils/date.js"
 
 const SENTINEL_DATE = new Date("2000-01-01T00:00:00.000Z")
 

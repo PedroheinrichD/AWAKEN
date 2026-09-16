@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client"
-import { asIconKey } from "../mappers"
-import type { ClientIconKey } from "../mappers"
+import { asIconKey } from "../mappers.js"
+import type { ClientIconKey } from "../mappers.js"
 
 export interface SerializedSkill {
   id: string

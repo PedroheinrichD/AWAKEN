@@ -1,7 +1,7 @@
 import type { PrismaClient, Rank } from "@prisma/client"
-import { pickRandom, rollLootRarity } from "../game/loot"
-import { serializeItem } from "./item.service"
-import { incrementStats } from "./stats.service"
+import { pickRandom, rollLootRarity } from "../game/loot.js"
+import { serializeItem } from "./item.service.js"
+import { incrementStats } from "./stats.service.js"
 
 export async function rollAndGrantBossLoot(prisma: PrismaClient, characterId: string, bossRank: Rank) {
   const entries = await prisma.lootTableEntry.findMany({ where: { rank: bossRank } })

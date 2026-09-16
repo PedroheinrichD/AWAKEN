@@ -1,5 +1,5 @@
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const titlesRouter = router({
   unlocked: protectedProcedure.query(async ({ ctx }) => {

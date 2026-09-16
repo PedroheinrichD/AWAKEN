@@ -1,6 +1,6 @@
-import { RANK_TO_CLIENT } from "../../mappers"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { RANK_TO_CLIENT } from "../../mappers.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const statsRouter = router({
   get: protectedProcedure.query(async ({ ctx }) => {

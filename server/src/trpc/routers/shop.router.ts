@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { asIconKey, RARITY_TO_CLIENT } from "../../mappers"
-import { CHARACTER_INCLUDE, serializeCharacter } from "../../services/character.service"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { asIconKey, RARITY_TO_CLIENT } from "../../mappers.js"
+import { CHARACTER_INCLUDE, serializeCharacter } from "../../services/character.service.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const shopRouter = router({
   listings: protectedProcedure.query(async ({ ctx }) => {

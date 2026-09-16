@@ -1,6 +1,6 @@
-import { RARITY_TO_CLIENT } from "../../mappers"
-import { formatRemaining } from "../../utils/time"
-import { protectedProcedure, router } from "../trpc"
+import { RARITY_TO_CLIENT } from "../../mappers.js"
+import { formatRemaining } from "../../utils/time.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const eventsRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {

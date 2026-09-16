@@ -1,8 +1,8 @@
 import type { Character, PrismaClient } from "@prisma/client"
-import { hpMaxFor } from "../game/attributes"
-import { RESURRECTION_CONFIG } from "../game/config"
-import { applySoloRevivePenalty } from "../game/death"
-import { CHARACTER_INCLUDE } from "./character.service"
+import { hpMaxFor } from "../game/attributes.js"
+import { RESURRECTION_CONFIG } from "../game/config.js"
+import { applySoloRevivePenalty } from "../game/death.js"
+import { CHARACTER_INCLUDE } from "./character.service.js"
 
 export async function killCharacter(prisma: PrismaClient, character: Character, cause: string) {
   await prisma.$transaction([

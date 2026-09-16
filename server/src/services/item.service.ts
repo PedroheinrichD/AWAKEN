@@ -1,5 +1,5 @@
 import type { Item } from "@prisma/client"
-import { asIconKey, CATEGORY_TO_CLIENT, RANK_TO_CLIENT, RARITY_TO_CLIENT, SLOT_TO_CLIENT } from "../mappers"
+import { asIconKey, CATEGORY_TO_CLIENT, RANK_TO_CLIENT, RARITY_TO_CLIENT, SLOT_TO_CLIENT } from "../mappers.js"
 
 export function serializeItem(item: Item, quantity?: number) {
   const requirements =

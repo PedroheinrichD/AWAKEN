@@ -1,5 +1,5 @@
 import type { PerformanceTier } from "@prisma/client"
-import { BATTLE_CONFIG, PERFORMANCE_MODIFIERS } from "./config"
+import { BATTLE_CONFIG, PERFORMANCE_MODIFIERS } from "./config.js"
 
 export interface BattleAbility {
   effectKey: string

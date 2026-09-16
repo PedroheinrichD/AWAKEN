@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client"
-import { RANK_ORDER } from "../game/config"
+import { RANK_ORDER } from "../game/config.js"
 import type { Rank } from "@prisma/client"
 
 const BASIC_EXERCISE_FIELD: Record<string, "flexoes" | "agachamentos" | "abdominais"> = {

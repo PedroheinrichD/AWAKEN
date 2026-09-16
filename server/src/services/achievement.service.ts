@@ -1,7 +1,7 @@
 import type { PrismaClient } from "@prisma/client"
-import type { AchievementFacts } from "../game/achievements"
-import { evaluateNewAchievements } from "../game/achievements"
-import { todayDateOnly } from "../utils/date"
+import type { AchievementFacts } from "../game/achievements.js"
+import { evaluateNewAchievements } from "../game/achievements.js"
+import { todayDateOnly } from "../utils/date.js"
 
 export async function gatherAchievementFacts(
   prisma: PrismaClient,

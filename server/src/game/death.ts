@@ -1,4 +1,4 @@
-import { RESURRECTION_CONFIG } from "./config"
+import { RESURRECTION_CONFIG } from "./config.js"
 
 export interface ReviveResult {
   level: number

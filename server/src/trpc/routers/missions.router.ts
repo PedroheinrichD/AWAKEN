@@ -1,14 +1,14 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { unlockAchievements } from "../../services/achievement.service"
-import { bumpStreakIfNewDay, CHARACTER_INCLUDE, serializeCharacter } from "../../services/character.service"
-import { ensureMissionAssignments, missionTarget, serializeMissionAssignment } from "../../services/mission.service"
-import { incrementStats, recordExerciseCompletion } from "../../services/stats.service"
-import { todayDateOnly } from "../../utils/date"
-import { grantXp } from "../../services/xp.service"
-import { tryDiscoverSkill } from "../../services/skill.service"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { unlockAchievements } from "../../services/achievement.service.js"
+import { bumpStreakIfNewDay, CHARACTER_INCLUDE, serializeCharacter } from "../../services/character.service.js"
+import { ensureMissionAssignments, missionTarget, serializeMissionAssignment } from "../../services/mission.service.js"
+import { incrementStats, recordExerciseCompletion } from "../../services/stats.service.js"
+import { todayDateOnly } from "../../utils/date.js"
+import { grantXp } from "../../services/xp.service.js"
+import { tryDiscoverSkill } from "../../services/skill.service.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const missionsRouter = router({
   listToday: protectedProcedure.query(async ({ ctx }) => {

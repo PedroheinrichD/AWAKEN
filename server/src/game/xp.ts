@@ -1,6 +1,6 @@
-import { attributeGainForLevel, hpMaxFor } from "./attributes"
-import { MAX_LEVEL, xpForLevel } from "./config"
-import type { Attributes } from "./types"
+import { attributeGainForLevel, hpMaxFor } from "./attributes.js"
+import { MAX_LEVEL, xpForLevel } from "./config.js"
+import type { Attributes } from "./types.js"
 
 export interface XpApplyInput {
   level: number

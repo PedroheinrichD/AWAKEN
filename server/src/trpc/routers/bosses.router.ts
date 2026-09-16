@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { pickTodaysBoss, serializeBoss } from "../../services/boss.service"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { pickTodaysBoss, serializeBoss } from "../../services/boss.service.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const bossesRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {

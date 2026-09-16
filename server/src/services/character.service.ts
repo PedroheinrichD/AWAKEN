@@ -1,8 +1,8 @@
 import type { BodyType, Character, CharacterEquipment, EquipmentSlot, HairStyle, Item, PrismaClient, Title } from "@prisma/client"
-import { hpMaxFor } from "../game/attributes"
-import { xpForLevel } from "../game/config"
-import { BODY_TYPE_TO_CLIENT, HAIR_STYLE_TO_CLIENT, RANK_TO_CLIENT, SLOT_TO_CLIENT } from "../mappers"
-import { ONE_DAY_MS, dateOnly, todayDateOnly } from "../utils/date"
+import { hpMaxFor } from "../game/attributes.js"
+import { xpForLevel } from "../game/config.js"
+import { BODY_TYPE_TO_CLIENT, HAIR_STYLE_TO_CLIENT, RANK_TO_CLIENT, SLOT_TO_CLIENT } from "../mappers.js"
+import { ONE_DAY_MS, dateOnly, todayDateOnly } from "../utils/date.js"
 
 export type CharacterWithRelations = Character & {
   equippedTitle: Title | null

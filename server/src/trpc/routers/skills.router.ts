@@ -1,6 +1,6 @@
-import { asIconKey } from "../../mappers"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { asIconKey } from "../../mappers.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 /** The only skills endpoint. It only ever reads through CharacterSkill — the
  * Skill catalog (including the secret pool) is never listed generically. */

@@ -1,6 +1,6 @@
-import { asIconKey } from "../../mappers"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { asIconKey } from "../../mappers.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const achievementsRouter = router({
   unlocked: protectedProcedure.query(async ({ ctx }) => {

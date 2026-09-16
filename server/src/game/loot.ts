@@ -1,5 +1,5 @@
 import { Rarity } from "@prisma/client"
-import { LOOT_CONFIG } from "./config"
+import { LOOT_CONFIG } from "./config.js"
 
 export interface LootTableRow {
   rarity: Rarity

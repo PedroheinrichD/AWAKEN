@@ -1,6 +1,6 @@
 import type { Character, PrismaClient } from "@prisma/client"
-import { applyXp } from "../game/xp"
-import { bumpRecordStats } from "./stats.service"
+import { applyXp } from "../game/xp.js"
+import { bumpRecordStats } from "./stats.service.js"
 
 export async function grantXp(prisma: PrismaClient, character: Character, xpGained: number) {
   const result = applyXp(

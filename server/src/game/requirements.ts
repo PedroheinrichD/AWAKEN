@@ -1,6 +1,6 @@
 import type { Item } from "@prisma/client"
-import { RANK_ORDER, RANK_REQUIREMENTS } from "./config"
-import type { Attributes } from "./types"
+import { RANK_ORDER, RANK_REQUIREMENTS } from "./config.js"
+import type { Attributes } from "./types.js"
 import { Rank } from "@prisma/client"
 
 export function rankAtLeast(rank: Rank, threshold: Rank): boolean {

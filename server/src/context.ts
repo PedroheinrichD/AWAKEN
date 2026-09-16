@@ -1,6 +1,6 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
-import { SESSION_COOKIE_NAME, verifySession } from "./auth/jwt"
-import { prisma } from "./db"
+import { SESSION_COOKIE_NAME, verifySession } from "./auth/jwt.js"
+import { prisma } from "./db.js"
 
 export async function createContext({ req, res }: CreateExpressContextOptions) {
   const token = req.cookies?.[SESSION_COOKIE_NAME] as string | undefined

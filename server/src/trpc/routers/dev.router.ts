@@ -1,11 +1,11 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { asIconKey } from "../../mappers"
-import { serializeCharacter } from "../../services/character.service"
-import { canReviveSolo, killCharacter, reviveSolo } from "../../services/death.service"
-import { grantXp } from "../../services/xp.service"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { asIconKey } from "../../mappers.js"
+import { serializeCharacter } from "../../services/character.service.js"
+import { canReviveSolo, killCharacter, reviveSolo } from "../../services/death.service.js"
+import { grantXp } from "../../services/xp.service.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 /**
  * Convenience mutations backing the in-app "System Diagnostics" panel. They

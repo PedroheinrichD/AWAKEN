@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server"
 import type { Response } from "express"
 import { z } from "zod"
-import { hashPassword, verifyPassword } from "../../auth/password"
-import { SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_NAME, signSession } from "../../auth/jwt"
-import { publicProcedure, router } from "../trpc"
+import { hashPassword, verifyPassword } from "../../auth/password.js"
+import { SESSION_COOKIE_MAX_AGE_MS, SESSION_COOKIE_NAME, signSession } from "../../auth/jwt.js"
+import { publicProcedure, router } from "../trpc.js"
 
 const credentialsSchema = z.object({
   username: z

@@ -1,6 +1,6 @@
-import { serializeItem } from "../../services/item.service"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { serializeItem } from "../../services/item.service.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 export const itemsRouter = router({
   inventory: protectedProcedure.query(async ({ ctx }) => {

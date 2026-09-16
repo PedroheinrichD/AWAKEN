@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
-import type { Context } from "../context"
-import { requireActiveCharacter as requireActiveCharacterRaw } from "../services/character.service"
+import type { Context } from "../context.js"
+import { requireActiveCharacter as requireActiveCharacterRaw } from "../services/character.service.js"
 
 type AuthedContext = Context & { player: NonNullable<Context["player"]> }
 

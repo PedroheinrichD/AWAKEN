@@ -1,10 +1,10 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { RANK_TO_CLIENT } from "../../mappers"
-import { unlockAchievements } from "../../services/achievement.service"
-import { incrementStats } from "../../services/stats.service"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+import { RANK_TO_CLIENT } from "../../mappers.js"
+import { unlockAchievements } from "../../services/achievement.service.js"
+import { incrementStats } from "../../services/stats.service.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 function serializeOpponent(character: { id: string; name: string; rank: string; level: number; hp: number; hpMax: number }) {
   return {

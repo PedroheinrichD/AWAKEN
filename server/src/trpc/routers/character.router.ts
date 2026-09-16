@@ -1,18 +1,18 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { effectiveAttributes } from "../../game/attributes"
-import { checkItemRequirements, checkRankPromotion } from "../../game/requirements"
-import { BODY_TYPE_FROM_CLIENT, HAIR_STYLE_FROM_CLIENT, RANK_TO_CLIENT, SLOT_FROM_CLIENT } from "../../mappers"
+import { effectiveAttributes } from "../../game/attributes.js"
+import { checkItemRequirements, checkRankPromotion } from "../../game/requirements.js"
+import { BODY_TYPE_FROM_CLIENT, HAIR_STYLE_FROM_CLIENT, RANK_TO_CLIENT, SLOT_FROM_CLIENT } from "../../mappers.js"
 import {
   CHARACTER_INCLUDE,
   createCharacterForPlayer,
   getAliveCharacter,
   getEquippedBonuses,
   serializeCharacter,
-} from "../../services/character.service"
-import type { Context } from "../../context"
-import { requireActiveCharacter } from "../helpers"
-import { protectedProcedure, router } from "../trpc"
+} from "../../services/character.service.js"
+import type { Context } from "../../context.js"
+import { requireActiveCharacter } from "../helpers.js"
+import { protectedProcedure, router } from "../trpc.js"
 
 const appearanceSchema = z.object({
   skinTone: z.string().regex(/^#[0-9a-fA-F]{6}$/),

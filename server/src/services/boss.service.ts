@@ -1,5 +1,5 @@
 import type { Boss, BossAbility } from "@prisma/client"
-import { BOSS_ENCOUNTER_TO_CLIENT, RANK_TO_CLIENT } from "../mappers"
+import { BOSS_ENCOUNTER_TO_CLIENT, RANK_TO_CLIENT } from "../mappers.js"
 
 export function serializeBoss(boss: Boss & { abilities: BossAbility[] }, defeated: boolean) {
   return {

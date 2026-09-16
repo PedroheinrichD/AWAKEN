@@ -1,5 +1,5 @@
-import { HP_FORMULA } from "./config"
-import type { Attributes, ItemBonuses } from "./types"
+import { HP_FORMULA } from "./config.js"
+import type { Attributes, ItemBonuses } from "./types.js"
 
 export function hpMaxFor(level: number, vitalidade: number): number {
   return HP_FORMULA.base + level * HP_FORMULA.perLevel + vitalidade * HP_FORMULA.perVitalidade
