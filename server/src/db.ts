@@ -14,7 +14,8 @@ const url = new URL(databaseUrl.replace(/^mysql:/, "mariadb:"))
 // plain true/false for `ssl` when it's parsed out of a connection string, so an object
 // config (with rejectUnauthorized disabled) has to be built by hand instead of just
 // forwarding the URL. Local dev (no ssl/sslaccept param) is unaffected — ssl stays undefined.
-const requiresTls = url.searchParams.has("ssl") || url.searchParams.has("sslaccept")
+const requiresTls =
+  url.searchParams.has("ssl") || url.searchParams.has("sslaccept") || url.searchParams.has("ssl-mode")
 
 const adapter = new PrismaMariaDb({
   host: url.hostname,
