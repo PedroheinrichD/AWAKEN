@@ -6,11 +6,11 @@
 
 */
 -- AlterTable
-ALTER TABLE `battle` ADD COLUMN `duplicateNextChallenge` BOOLEAN NOT NULL DEFAULT false,
+ALTER TABLE `Battle` ADD COLUMN `duplicateNextChallenge` BOOLEAN NOT NULL DEFAULT false,
     ADD COLUMN `itemsSealed` BOOLEAN NOT NULL DEFAULT false;
 
 -- AlterTable
-ALTER TABLE `mission` ADD COLUMN `objective` VARCHAR(191) NOT NULL;
+ALTER TABLE `Mission` ADD COLUMN `objective` VARCHAR(191) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `missionassignment` DROP COLUMN `target`;
+ALTER TABLE `MissionAssignment` DROP COLUMN `target`;

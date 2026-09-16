@@ -1,8 +1,84 @@
 import { Minus, Plus } from "@phosphor-icons/react"
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
+import { isCameraSupportedExercise } from "@/lib/pose/exerciseDetector"
 import { cn } from "@/lib/utils"
 
+// The MediaPipe vision runtime is a large dependency (§19: don't bloat every
+// screen with it) — only fetch this chunk once a camera-validated exercise is
+// actually rendered, not on every page that happens to import RepCounter.
+const CameraExerciseSession = lazy(() =>
+  import("@/components/pose/CameraExerciseSession").then((module) => ({ default: module.CameraExerciseSession })),
+)
+
 interface RepCounterProps {
+  target: number
+  timeLimitSeconds: number
+  /** Which exercise this challenge/turn is for. Only flexão/agachamento/corrida have a camera detector today (claude.md §1); anything else falls back to manual. */
+  exerciseId: string
+  disabled?: boolean
+  showTarget?: boolean
+  onSubmit: (repsCompleted: number, timeRemainingSeconds: number) => void
+}
+
+/**
+ * Camera-validated by default whenever a detector exists for this exercise
+ * (claude.md §14: CAMERA_VALIDATED is the standard path, MANUAL is a debug
+ * fallback). Either mode only ever calls `onSubmit(repsCompleted,
+ * timeRemainingSeconds)` — the battle/duel APIs downstream never know which
+ * mode produced the numbers. Keyed by exerciseId so a new challenge/turn always
+ * starts back on the camera-validated default instead of carrying over a
+ * previous manual-mode toggle.
+ */
+export function RepCounter(props: RepCounterProps) {
+  return <RepCounterModeSwitcher key={props.exerciseId} {...props} />
+}
+
+function RepCounterModeSwitcher({ target, timeLimitSeconds, exerciseId, disabled, showTarget = true, onSubmit }: RepCounterProps) {
+  const cameraSupported = isCameraSupportedExercise(exerciseId)
+  const [manualOverride, setManualOverride] = useState(false)
+  const mode: "camera" | "manual" = cameraSupported && !manualOverride ? "camera" : "manual"
+
+  if (mode === "camera" && isCameraSupportedExercise(exerciseId)) {
+    return (
+      <div className="space-y-3">
+        <Suspense fallback={<p className="text-center font-mono text-xs text-ink-tertiary">Carregando módulo de câmera...</p>}>
+          <CameraExerciseSession
+            exerciseId={exerciseId}
+            target={target}
+            timeLimitSeconds={timeLimitSeconds}
+            disabled={disabled}
+            showTarget={showTarget}
+            onSubmit={onSubmit}
+          />
+        </Suspense>
+        <button
+          type="button"
+          onClick={() => setManualOverride(true)}
+          className="mx-auto block font-mono text-[10px] text-ink-tertiary underline-offset-2 hover:underline"
+        >
+          Usar contagem manual (modo debug)
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      <ManualRepCounter target={target} timeLimitSeconds={timeLimitSeconds} disabled={disabled} showTarget={showTarget} onSubmit={onSubmit} />
+      {cameraSupported ? (
+        <button
+          type="button"
+          onClick={() => setManualOverride(false)}
+          className="mx-auto block font-mono text-[10px] text-system underline-offset-2 hover:underline"
+        >
+          Usar câmera
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+interface ManualRepCounterProps {
   target: number
   timeLimitSeconds: number
   disabled?: boolean
@@ -10,13 +86,8 @@ interface RepCounterProps {
   onSubmit: (repsCompleted: number, timeRemainingSeconds: number) => void
 }
 
-/**
- * Manual tap-to-count input, standing in for camera-based rep detection
- * (claude.md §20 / prompt §20 explicitly allow deferring the real computer-vision
- * validation). The rules engine only ever sees {repsCompleted, timeRemainingSeconds},
- * so swapping this for a camera feed later doesn't touch any battle/duel logic.
- */
-export function RepCounter({ target, timeLimitSeconds, disabled, showTarget = true, onSubmit }: RepCounterProps) {
+/** Manual tap-to-count input — fallback for exercises without a camera detector yet, or debug mode. */
+function ManualRepCounter({ target, timeLimitSeconds, disabled, showTarget = true, onSubmit }: ManualRepCounterProps) {
   const [reps, setReps] = useState(0)
   const [seconds, setSeconds] = useState(timeLimitSeconds)
   const [submitted, setSubmitted] = useState(false)

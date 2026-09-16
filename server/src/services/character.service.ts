@@ -130,27 +130,35 @@ export async function createCharacterForPlayer(
   const vitalidade = 10
   const hpMax = hpMaxFor(level, vitalidade)
 
-  const characterId = await prisma.$transaction(async (tx) => {
-    const character = await tx.character.create({
-      data: { playerId, name, level, hp: hpMax, hpMax, ...appearance },
-    })
+  // Read outside the transaction: static seed data, no need to hold a transaction open for it.
+  const starterItems = await prisma.item.findMany({ where: { id: { in: STARTER_ITEM_IDS } } })
 
-    await tx.characterStats.create({ data: { characterId: character.id } })
-
-    for (const itemId of STARTER_ITEM_IDS) {
-      await tx.inventoryItem.create({
-        data: { characterId: character.id, itemId, quantity: 1, source: "starter" },
+  const characterId = await prisma.$transaction(
+    async (tx) => {
+      const character = await tx.character.create({
+        data: { playerId, name, level, hp: hpMax, hpMax, ...appearance },
       })
-      const item = await tx.item.findUniqueOrThrow({ where: { id: itemId } })
-      if (item.slot) {
-        await tx.characterEquipment.create({
-          data: { characterId: character.id, slot: item.slot, itemId },
+
+      await tx.characterStats.create({ data: { characterId: character.id } })
+
+      await tx.inventoryItem.createMany({
+        data: STARTER_ITEM_IDS.map((itemId) => ({ characterId: character.id, itemId, quantity: 1, source: "starter" })),
+      })
+
+      const equippable = starterItems.filter((item) => item.slot !== null)
+      if (equippable.length > 0) {
+        await tx.characterEquipment.createMany({
+          data: equippable.map((item) => ({ characterId: character.id, slot: item.slot!, itemId: item.id })),
         })
       }
-    }
 
-    return character.id
-  })
+      return character.id
+    },
+    // A dozen-plus sequential round trips inside one interactive transaction blew past
+    // Prisma's default 5s timeout on a remote/managed database (fine on a local one) —
+    // now it's 4 round trips, but keep a generous ceiling as a safety margin.
+    { timeout: 15000 },
+  )
 
   return prisma.character.findUniqueOrThrow({ where: { id: characterId }, include: CHARACTER_INCLUDE })
 }

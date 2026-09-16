@@ -22,7 +22,7 @@ export function Modal({ open, onClose, children, className }: ModalProps) {
           onClick={onClose}
         >
           <motion.div
-            className={cn("relative w-full max-w-lg", className)}
+            className={cn("relative max-h-[85vh] w-full max-w-lg overflow-y-auto", className)}
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}

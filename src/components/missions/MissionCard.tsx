@@ -17,9 +17,11 @@ const TYPE_COLOR: Record<Mission["type"], string> = {
 interface MissionCardProps {
   mission: Mission
   onToggle?: () => void
+  /** When set, this mission's exercise has a real camera detector — show "Validar com Câmera" instead of an unvalidated "Concluir". */
+  onValidateWithCamera?: () => void
 }
 
-export function MissionCard({ mission, onToggle }: MissionCardProps) {
+export function MissionCard({ mission, onToggle, onValidateWithCamera }: MissionCardProps) {
   const color = TYPE_COLOR[mission.type]
   const pct = percentage(mission.progress, mission.target)
 
@@ -58,7 +60,15 @@ export function MissionCard({ mission, onToggle }: MissionCardProps) {
 
       <div className="flex items-center justify-between gap-3 border-t border-surface-border pt-2">
         <p className="font-mono text-[11px] text-ink-secondary">{mission.reward}</p>
-        {onToggle && !mission.completed ? (
+        {!mission.completed && onValidateWithCamera ? (
+          <button
+            type="button"
+            onClick={onValidateWithCamera}
+            className="shrink-0 font-display text-[10px] font-semibold tracking-[0.15em] text-system uppercase hover:text-system-strong"
+          >
+            Validar com Câmera
+          </button>
+        ) : onToggle && !mission.completed ? (
           <button
             type="button"
             onClick={onToggle}

@@ -145,6 +145,7 @@ export function BossFightScreen() {
               )}
               <RepCounter
                 key={battle.currentTurn}
+                exerciseId={challenge.exerciseId}
                 target={challenge.target}
                 timeLimitSeconds={challenge.timeLimitSeconds}
                 disabled={submitTurn.isPending}

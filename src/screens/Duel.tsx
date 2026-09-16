@@ -96,6 +96,7 @@ export function DuelScreen() {
                 {EXERCISE_OPTIONS.find((option) => option.id === acceptedDuel.exerciseId)?.label ?? acceptedDuel.exerciseId}
               </p>
               <RepCounter
+                exerciseId={acceptedDuel.exerciseId}
                 target={999}
                 showTarget={false}
                 timeLimitSeconds={acceptedDuel.targetSeconds}

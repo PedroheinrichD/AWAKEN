@@ -35,7 +35,14 @@ export function CharacterCreateScreen() {
   }
 
   if (step === "awakening") {
-    return <AwakeningWelcome name={finalName} onEnter={finalize} pending={createCharacter.isPending} />
+    return (
+      <AwakeningWelcome
+        name={finalName}
+        onEnter={finalize}
+        pending={createCharacter.isPending}
+        errorMessage={createCharacter.error?.message ?? null}
+      />
+    )
   }
 
   return (
@@ -113,7 +120,17 @@ export function CharacterCreateScreen() {
   )
 }
 
-function AwakeningWelcome({ name, onEnter, pending }: { name: string; onEnter: () => void; pending: boolean }) {
+function AwakeningWelcome({
+  name,
+  onEnter,
+  pending,
+  errorMessage,
+}: {
+  name: string
+  onEnter: () => void
+  pending: boolean
+  errorMessage: string | null
+}) {
   const scope = useGsapContext<HTMLDivElement>(() => {
     const tl = gsap.timeline()
     tl.from(".welcome-label", { autoAlpha: 0, y: 10, duration: 0.6 })
@@ -144,6 +161,11 @@ function AwakeningWelcome({ name, onEnter, pending }: { name: string; onEnter: (
       >
         {pending ? "Sincronizando..." : "Entrar no Mundo"}
       </button>
+      {errorMessage ? (
+        <p className="welcome-cta max-w-md text-xs text-danger">
+          Falha ao sincronizar: {errorMessage} — tente novamente.
+        </p>
+      ) : null}
     </div>
   )
 }

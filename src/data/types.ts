@@ -101,6 +101,7 @@ export interface Mission {
   description: string
   type: MissionType
   objective: string
+  exerciseId: string | null
   progress: number
   target: number
   reward: string

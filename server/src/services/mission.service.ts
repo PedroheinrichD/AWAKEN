@@ -36,6 +36,7 @@ export function serializeMissionAssignment(assignment: MissionAssignment & { mis
     description: assignment.mission.description,
     type: MISSION_TYPE_TO_CLIENT[assignment.mission.type],
     objective: assignment.mission.objective,
+    exerciseId: assignment.mission.exerciseId,
     progress: assignment.progress,
     target,
     reward: rewardParts.join(" · "),
