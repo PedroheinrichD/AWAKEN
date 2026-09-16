@@ -24,9 +24,12 @@ const adapter = new PrismaMariaDb({
   password: decodeURIComponent(url.password),
   database: url.pathname.replace(/^\//, ""),
   ssl: requiresTls ? { rejectUnauthorized: false } : undefined,
-  // The driver's default (~1s) is too aggressive for a remote managed database over
-  // the public internet; a slower network hop shouldn't fail every connection attempt.
+  // The driver's default connectTimeout (~1s) is too aggressive for a remote managed
+  // database over the public internet. acquireTimeout must be raised too: the pool
+  // silently clamps connectTimeout down to acquireTimeout (default 10s) otherwise,
+  // which defeats connectTimeout entirely.
   connectTimeout: 15000,
+  acquireTimeout: 20000,
 })
 
 export const prisma = new PrismaClient({ adapter })
