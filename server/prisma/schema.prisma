@@ -58,6 +58,9 @@ enum HairStyle {
   CURTO
   LONGO
   PRESO
+  MOICANO
+  AFRO
+  TRANCAS
 }
 
 enum MissionType {

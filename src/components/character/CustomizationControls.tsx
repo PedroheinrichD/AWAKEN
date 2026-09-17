@@ -12,6 +12,9 @@ const HAIR_STYLE_OPTIONS: { value: CharacterAppearance["hairStyle"]; label: stri
   { value: "curto", label: "Curto" },
   { value: "longo", label: "Longo" },
   { value: "preso", label: "Preso" },
+  { value: "moicano", label: "Moicano" },
+  { value: "afro", label: "Afro" },
+  { value: "trancas", label: "Tranças" },
 ]
 
 const SKIN_TONES = ["#f2c9a1", "#dba876", "#c68a5e", "#a56a42", "#7a4a2b", "#4a2e1c"]

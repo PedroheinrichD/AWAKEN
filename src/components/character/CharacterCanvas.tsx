@@ -111,6 +111,13 @@ export function CharacterCanvas({ appearance, equipment = {}, items = [], showCa
         <circle cx="86" cy="40" r="2.2" fill={appearance.eyeColor} />
 
         <HairShape style={appearance.hairStyle} color={appearance.hairColor} />
+
+        {SLOT_ORDER.map((slot) => {
+          const itemId = equipment[slot]
+          const item = itemId ? items.find((candidate) => candidate.id === itemId) : undefined
+          if (!item) return null
+          return <EquipmentGlyph key={slot} anchor={ANCHORS[slot]} item={item} />
+        })}
       </svg>
 
       {showCallouts ? (
@@ -120,6 +127,26 @@ export function CharacterCanvas({ appearance, equipment = {}, items = [], showCa
         </>
       ) : null}
     </div>
+  )
+}
+
+/** Equipped item worn on the silhouette itself: a rarity-glowing socket at the slot's
+ * anchor point, with the item's own icon inside — reuses the same icon/rarity language
+ * as the side callouts instead of hand-drawn per-item art (claude.md §16/§36). */
+function EquipmentGlyph({ anchor, item }: { anchor: { x: number; y: number }; item: CanvasItem }) {
+  const Icon = ICON_MAP[item.icon]
+  const color = `var(--color-${RARITY_CONFIG[item.rarity].slug})`
+
+  return (
+    <g>
+      <circle cx={anchor.x} cy={anchor.y} r="10" fill={color} fillOpacity="0.18" />
+      <circle cx={anchor.x} cy={anchor.y} r="9" fill="none" stroke={color} strokeWidth="1.2" strokeOpacity="0.85" />
+      <foreignObject x={anchor.x - 7} y={anchor.y - 7} width="14" height="14">
+        <div className="flex h-full w-full items-center justify-center" style={{ color }}>
+          <Icon size={12} weight="fill" />
+        </div>
+      </foreignObject>
+    </g>
   )
 }
 
@@ -139,6 +166,35 @@ function HairShape({ style, color }: { style: CharacterAppearance["hairStyle"]; 
       <>
         <path d="M62,30 Q80,10 98,30 L98,36 Q80,22 62,36 Z" fill={color} />
         <circle cx="96" cy="34" r="6" fill={color} />
+      </>
+    )
+  }
+  if (style === "moicano") {
+    return (
+      <>
+        <polygon points="72,10 76,24 68,24" fill={color} />
+        <polygon points="80,2 85,22 75,22" fill={color} />
+        <polygon points="88,10 92,24 84,24" fill={color} />
+      </>
+    )
+  }
+  if (style === "afro") {
+    return (
+      <path
+        d="M54,38 Q50,8 80,4 Q110,8 106,38 Q106,24 96,16 Q80,8 64,16 Q54,24 54,38 Z"
+        fill={color}
+        fillOpacity="0.95"
+      />
+    )
+  }
+  if (style === "trancas") {
+    return (
+      <>
+        <path d="M60,30 Q80,8 100,30 L100,36 Q80,20 60,36 Z" fill={color} />
+        <polygon points="64,32 68,32 66,90 62,86" fill={color} fillOpacity="0.9" />
+        <polygon points="74,34 78,34 76,94 72,90" fill={color} fillOpacity="0.9" />
+        <polygon points="82,34 86,34 88,94 84,90" fill={color} fillOpacity="0.9" />
+        <polygon points="92,32 96,32 98,90 94,86" fill={color} fillOpacity="0.9" />
       </>
     )
   }

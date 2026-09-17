@@ -159,7 +159,7 @@ export interface JourneyStats {
 
 export interface CharacterAppearance {
   skinTone: string
-  hairStyle: "curto" | "longo" | "raspado" | "preso"
+  hairStyle: "curto" | "longo" | "raspado" | "preso" | "moicano" | "afro" | "trancas"
   hairColor: string
   eyeColor: string
   bodyType: "esguio" | "atletico" | "robusto"

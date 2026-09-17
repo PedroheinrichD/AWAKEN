@@ -16,7 +16,7 @@ import { protectedProcedure, router } from "../trpc.js"
 
 const appearanceSchema = z.object({
   skinTone: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  hairStyle: z.enum(["raspado", "curto", "longo", "preso"]),
+  hairStyle: z.enum(["raspado", "curto", "longo", "preso", "moicano", "afro", "trancas"]),
   hairColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   eyeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   bodyType: z.enum(["esguio", "atletico", "robusto"]),

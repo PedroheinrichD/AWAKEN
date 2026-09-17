@@ -19,7 +19,7 @@ type ClientItemCategory = "arma" | "armadura" | "roupa" | "acessorio" | "item" |
 type ClientEquipmentSlot = "cabeca" | "corpo" | "maos" | "pernas" | "pes" | "arma" | "acessorio1" | "acessorio2"
 type ClientBossEncounterType = "comum" | "errante" | "secreto"
 type ClientMissionType = "diaria" | "bonus" | "especial"
-type ClientHairStyle = "curto" | "longo" | "raspado" | "preso"
+type ClientHairStyle = "curto" | "longo" | "raspado" | "preso" | "moicano" | "afro" | "trancas"
 type ClientBodyType = "esguio" | "atletico" | "robusto"
 
 export type ClientIconKey =
@@ -134,6 +134,9 @@ export const HAIR_STYLE_TO_CLIENT: Record<HairStyle, ClientHairStyle> = {
   CURTO: "curto",
   LONGO: "longo",
   PRESO: "preso",
+  MOICANO: "moicano",
+  AFRO: "afro",
+  TRANCAS: "trancas",
 }
 
 export const HAIR_STYLE_FROM_CLIENT: Record<ClientHairStyle, HairStyle> = {
@@ -141,6 +144,9 @@ export const HAIR_STYLE_FROM_CLIENT: Record<ClientHairStyle, HairStyle> = {
   curto: HairStyle.CURTO,
   longo: HairStyle.LONGO,
   preso: HairStyle.PRESO,
+  moicano: HairStyle.MOICANO,
+  afro: HairStyle.AFRO,
+  trancas: HairStyle.TRANCAS,
 }
 
 export const BODY_TYPE_TO_CLIENT: Record<BodyType, ClientBodyType> = {
