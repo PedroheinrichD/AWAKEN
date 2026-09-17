@@ -1,5 +1,5 @@
 import type { Boss } from "@/data/types"
-import { RANK_CONFIG } from "@/lib/rank"
+import { RANK_CONFIG, RANK_EFFECTS } from "@/lib/rank"
 import { cn } from "@/lib/utils"
 
 function hashString(value: string): number {
@@ -17,9 +17,9 @@ interface BossSigilProps {
 
 export function BossSigil({ boss, size = 72 }: BossSigilProps) {
   const config = RANK_CONFIG[boss.rank]
+  const effect = RANK_EFFECTS[boss.rank]
   const colorVar = `var(--color-${config.slug})`
   const sides = 5 + config.weight
-  const isUltimate = boss.rank === "S++"
   const rotationOffsetRad = ((hashString(boss.id) % 360) * Math.PI) / 180
 
   const points = Array.from({ length: sides }, (_, i) => {
@@ -36,13 +36,16 @@ export function BossSigil({ boss, size = 72 }: BossSigilProps) {
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className={cn("animate-[spin_22s_linear_infinite]", isUltimate && "animate-pulse-slow")}
+        className={cn("animate-[spin_22s_linear_infinite]", effect.pulse && "animate-pulse-slow")}
       >
         <polygon points={points} fill={colorVar} fillOpacity={0.14} stroke={colorVar} strokeWidth={1.4} />
       </svg>
       <div
         className="absolute h-2 w-2 rounded-full"
-        style={{ backgroundColor: colorVar, boxShadow: `0 0 16px ${colorVar}` }}
+        style={{
+          backgroundColor: colorVar,
+          boxShadow: `0 0 ${Math.max(16, effect.glowPx)}px ${colorVar}`,
+        }}
       />
     </div>
   )
