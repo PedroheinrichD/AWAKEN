@@ -1,6 +1,7 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
 import { SystemPanel } from "@/components/system/SystemPanel"
+import { playSound } from "@/lib/audio/soundEngine"
 import { trpc } from "@/lib/trpc"
 
 export function AuthScreen() {
@@ -9,7 +10,10 @@ export function AuthScreen() {
   const [password, setPassword] = useState("")
 
   const utils = trpc.useUtils()
-  const onSuccess = () => utils.auth.me.invalidate()
+  const onSuccess = () => {
+    playSound("confirm")
+    utils.auth.me.invalidate()
+  }
   const login = trpc.auth.login.useMutation({ onSuccess })
   const register = trpc.auth.register.useMutation({ onSuccess })
 

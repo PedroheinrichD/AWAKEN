@@ -6,6 +6,7 @@ import { CombatHUD } from "@/components/bosses/CombatHUD"
 import { RarityBadge } from "@/components/rpg/RarityBadge"
 import { Modal } from "@/components/system/Modal"
 import { SystemPanel } from "@/components/system/SystemPanel"
+import { playSound } from "@/lib/audio/soundEngine"
 import { trpc } from "@/lib/trpc"
 import { useGameStore } from "@/store/useGameStore"
 
@@ -69,6 +70,7 @@ export function BossFightScreen() {
       if (result.awakenedSkill) pushOverlay({ type: "awakening", skill: result.awakenedSkill })
 
       if (result.battle.outcome !== "em_andamento") {
+        playSound(result.battle.outcome === "vitoria" ? "turnVictory" : "turnDefeat")
         setOutcome({ result: result.battle.outcome, lootName: result.loot?.name })
       }
     },

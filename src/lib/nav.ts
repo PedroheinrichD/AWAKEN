@@ -4,6 +4,7 @@ import {
   ChartBar,
   ClipboardText,
   Crosshair,
+  GearSix,
   House,
   MapTrifold,
   Medal,
@@ -37,4 +38,5 @@ export const NAV_ITEMS: NavItem[] = [
   { path: "/titulos", label: "Títulos", icon: Medal },
   { path: "/estatisticas", label: "Estatísticas", icon: ChartBar },
   { path: "/loja-eventos", label: "Loja de Eventos", icon: Storefront },
+  { path: "/opcoes", label: "Opções", icon: GearSix },
 ]

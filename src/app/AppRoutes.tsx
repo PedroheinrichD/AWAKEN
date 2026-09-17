@@ -11,6 +11,7 @@ import { HomeScreen } from "@/screens/Home"
 import { InventoryScreen } from "@/screens/Inventory"
 import { MapScreen } from "@/screens/Map"
 import { MissionsScreen } from "@/screens/Missions"
+import { SettingsScreen } from "@/screens/Settings"
 import { SkillsScreen } from "@/screens/Skills"
 import { StatsScreen } from "@/screens/Stats"
 import { TitlesScreen } from "@/screens/Titles"
@@ -35,6 +36,7 @@ export function AppRoutes() {
         <Route path="conquistas" element={<AchievementsScreen />} />
         <Route path="titulos" element={<TitlesScreen />} />
         <Route path="estatisticas" element={<StatsScreen />} />
+        <Route path="opcoes" element={<SettingsScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

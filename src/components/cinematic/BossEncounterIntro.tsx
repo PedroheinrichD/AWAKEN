@@ -1,6 +1,7 @@
 import { useRef } from "react"
 import { RankBadge } from "@/components/hud/RankBadge"
 import type { Boss } from "@/data/types"
+import { playSound } from "@/lib/audio/soundEngine"
 import { gsap, prefersReducedMotion } from "@/lib/gsap"
 import { useGsapContext } from "@/lib/useGsapContext"
 
@@ -15,7 +16,7 @@ export function BossEncounterIntro({ boss, onComplete }: BossEncounterIntroProps
 
   const scope = useGsapContext<HTMLDivElement>(() => {
     const tl = gsap.timeline({ onComplete: () => onCompleteRef.current() })
-    tl.from(".encounter-bar-top", { yPercent: -100, duration: 0.5, ease: "power3.out" })
+    tl.from(".encounter-bar-top", { yPercent: -100, duration: 0.5, ease: "power3.out", onStart: () => playSound("bossEncounter") })
       .from(".encounter-bar-bottom", { yPercent: 100, duration: 0.5, ease: "power3.out" }, "<")
       .from(".encounter-rank", { autoAlpha: 0, scale: 0.7, duration: 0.5 }, "-=0.1")
       .from(".encounter-name", { autoAlpha: 0, y: 10, duration: 0.5 }, "-=0.2")

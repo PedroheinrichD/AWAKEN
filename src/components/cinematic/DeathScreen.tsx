@@ -1,5 +1,6 @@
 import { CharacterCanvas } from "@/components/character/CharacterCanvas"
 import type { Character } from "@/data/types"
+import { playSound } from "@/lib/audio/soundEngine"
 import { gsap, prefersReducedMotion } from "@/lib/gsap"
 import { useGsapContext } from "@/lib/useGsapContext"
 
@@ -12,7 +13,7 @@ interface DeathScreenProps {
 
 export function DeathScreen({ character, onCreateNew }: DeathScreenProps) {
   const scope = useGsapContext<HTMLDivElement>(() => {
-    const tl = gsap.timeline()
+    const tl = gsap.timeline({ onStart: () => playSound("death") })
     tl.from(".death-vignette", { autoAlpha: 0, duration: 0.6 })
       .fromTo(
         ".death-canvas",

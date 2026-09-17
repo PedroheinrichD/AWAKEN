@@ -5,6 +5,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { DiagnosticsPanel } from "@/components/system/DiagnosticsPanel"
 import { OverlayLayer } from "@/components/system/OverlayLayer"
 import { PlayerHUD } from "@/components/hud/PlayerHUD"
+import { playSound } from "@/lib/audio/soundEngine"
 import { NAV_ITEMS } from "@/lib/nav"
 import { useLenis } from "@/lib/useLenis"
 import { cn } from "@/lib/utils"
@@ -102,7 +103,10 @@ function NavList({ onNavigate }: { onNavigate: () => void }) {
           key={item.path}
           to={item.path}
           end={item.path === "/"}
-          onClick={onNavigate}
+          onClick={() => {
+            playSound("click")
+            onNavigate()
+          }}
           className={({ isActive }) =>
             cn(
               "flex items-center gap-3 px-3 py-2.5 font-display text-[13px] font-medium tracking-wide transition-colors",

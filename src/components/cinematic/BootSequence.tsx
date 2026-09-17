@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { playSound } from "@/lib/audio/soundEngine"
 import { gsap, prefersReducedMotion } from "@/lib/gsap"
 import { useGsapContext } from "@/lib/useGsapContext"
 
@@ -47,13 +48,14 @@ export function BootSequence({ onComplete }: BootSequenceProps) {
       .fromTo(
         ".boot-online",
         { autoAlpha: 0, scale: 0.92, filter: "blur(8px)" },
-        { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out" },
+        { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out", onStart: () => playSound("boot") },
       )
       .to(".boot-online", { autoAlpha: 0, duration: 0.5 }, "+=0.7")
   }, [])
 
   useEffect(() => {
     if (!reduced) return
+    playSound("boot")
     const timeout = window.setTimeout(() => onCompleteRef.current(), 900)
     return () => window.clearTimeout(timeout)
   }, [reduced])
