@@ -50,7 +50,16 @@ export function useCamera() {
       streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
+        try {
+          await videoRef.current.play()
+        } catch {
+          // Some mobile browsers (notably iOS Safari) can reject an async play() call
+          // that lands outside the immediate user-gesture window — getUserMedia's own
+          // await already consumed it — even though the stream itself is perfectly
+          // valid and the element starts rendering frames on its own once srcObject is
+          // set. Treating this as a real failure was masking a working camera behind a
+          // misleading "permission denied" message.
+        }
       }
       setFacingMode(mode)
       setStatus("ready")
