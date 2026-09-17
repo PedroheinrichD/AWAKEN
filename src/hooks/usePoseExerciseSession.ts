@@ -47,16 +47,23 @@ export function usePoseExerciseSession(exerciseId: SupportedExerciseId) {
     detectorRef.current = createExerciseDetector(exerciseId)
   }, [exerciseId])
 
+  const cameraStop = camera.stop
+
+  // Depends only on the stable camera.stop function, never on `camera` itself: that object
+  // is a fresh literal on every useCamera() render, so a dependency on the whole object gave
+  // this callback a new identity on every re-render — which, combined with the cleanup effect
+  // below, tore the session down (cancelled the frame loop, stopped the camera, reset to
+  // IDLE) on the very first state update after start(), on every device.
   const stop = useCallback(() => {
     runningRef.current = false
     calibratingRef.current = false
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     rafRef.current = null
-    camera.stop()
+    cameraStop()
     setPhase("IDLE")
     setLandmarks(null)
     setDetection(null)
-  }, [camera])
+  }, [cameraStop])
 
   const loop = useCallback(() => {
     if (!runningRef.current) return
@@ -107,11 +114,13 @@ export function usePoseExerciseSession(exerciseId: SupportedExerciseId) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camera.videoRef])
 
+  const cameraStart = camera.start
+
   const start = useCallback(async () => {
     setErrorMessage(null)
     setPhase("REQUESTING_CAMERA")
 
-    const cameraResult = await camera.start()
+    const cameraResult = await cameraStart()
     if (cameraResult.status !== "ready") {
       setPhase(
         cameraResult.status === "denied" ? "CAMERA_DENIED" : cameraResult.status === "unavailable" ? "CAMERA_UNAVAILABLE" : "CAMERA_ERROR",
@@ -126,7 +135,7 @@ export function usePoseExerciseSession(exerciseId: SupportedExerciseId) {
     } catch {
       setPhase("MODEL_ERROR")
       setErrorMessage("Não foi possível carregar o modelo de detecção de pose.")
-      camera.stop()
+      cameraStop()
       return
     }
 
@@ -138,7 +147,7 @@ export function usePoseExerciseSession(exerciseId: SupportedExerciseId) {
     runningRef.current = true
     setPhase("CALIBRATING")
     rafRef.current = requestAnimationFrame(loop)
-  }, [camera, loop])
+  }, [cameraStart, cameraStop, loop])
 
   useEffect(() => stop, [stop])
 
