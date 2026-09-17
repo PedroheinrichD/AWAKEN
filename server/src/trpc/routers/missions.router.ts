@@ -3,6 +3,7 @@ import { z } from "zod"
 import { unlockAchievements } from "../../services/achievement.service.js"
 import { bumpStreakIfNewDay, CHARACTER_INCLUDE, serializeCharacter } from "../../services/character.service.js"
 import { runOverrunBonus } from "../../game/running.js"
+import { RANK_TO_CLIENT } from "../../mappers.js"
 import { ensureMissionAssignments, missionTarget, serializeMissionAssignment } from "../../services/mission.service.js"
 import { incrementStats, recordExerciseCompletion } from "../../services/stats.service.js"
 import { todayDateOnly } from "../../utils/date.js"
@@ -127,6 +128,9 @@ export const missionsRouter = router({
         leveledUp: xpResult.levelsGained > 0,
         fromLevel: xpResult.fromLevel,
         toLevel: xpResult.toLevel,
+        rankPromotionUnlocked: xpResult.rankPromotionJustUnlocked
+          ? { rank: RANK_TO_CLIENT[xpResult.rankPromotionJustUnlocked.rank], minLevel: xpResult.rankPromotionJustUnlocked.minLevel }
+          : null,
         unlockedAchievements,
         awakenedSkill,
         overrunBonus: bonus.xp > 0 || bonus.currency > 0 ? bonus : null,

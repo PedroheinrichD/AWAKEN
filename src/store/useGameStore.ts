@@ -19,7 +19,13 @@ export interface AwakeningEvent {
   skill: Skill
 }
 
-export type OverlayEvent = LevelUpEvent | RankUpEvent | AwakeningEvent
+export interface RankEligibleEvent {
+  type: "rankEligible"
+  rank: Rank
+  minLevel: number
+}
+
+export type OverlayEvent = LevelUpEvent | RankUpEvent | AwakeningEvent | RankEligibleEvent
 
 interface UiState {
   overlayQueue: OverlayEvent[]

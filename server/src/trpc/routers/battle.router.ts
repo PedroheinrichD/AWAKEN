@@ -3,6 +3,7 @@ import { z } from "zod"
 import { unlockAchievements } from "../../services/achievement.service.js"
 import { resolveTurn } from "../../game/battle.js"
 import { BATTLE_CONFIG, BOSS_XP_REWARD, POTION_HEAL_FRACTION, RANK_ORDER, SKILL_EFFECT_IDS } from "../../game/config.js"
+import { RANK_TO_CLIENT } from "../../mappers.js"
 import { performanceFromChallenge } from "../../game/performance.js"
 import { BATTLE_CHALLENGE_EXERCISES, challengeTargetFor } from "../../services/boss.service.js"
 import { CHARACTER_INCLUDE, serializeCharacter } from "../../services/character.service.js"
@@ -224,6 +225,7 @@ export const battleRouter = router({
       let leveledUp = false
       let fromLevel = character.level
       let toLevel = character.level
+      let rankPromotionUnlocked: { rank: (typeof RANK_TO_CLIENT)[keyof typeof RANK_TO_CLIENT]; minLevel: number } | null = null
 
       if (died) {
         const freshCharacter = await ctx.prisma.character.findUniqueOrThrow({ where: { id: character.id } })
@@ -234,6 +236,12 @@ export const battleRouter = router({
           leveledUp = xpResult.levelsGained > 0
           fromLevel = xpResult.fromLevel
           toLevel = xpResult.toLevel
+          if (xpResult.rankPromotionJustUnlocked) {
+            rankPromotionUnlocked = {
+              rank: RANK_TO_CLIENT[xpResult.rankPromotionJustUnlocked.rank],
+              minLevel: xpResult.rankPromotionJustUnlocked.minLevel,
+            }
+          }
         }
 
         if (!awakenedSkill && survivedCritical) {
@@ -262,6 +270,7 @@ export const battleRouter = router({
         leveledUp,
         fromLevel,
         toLevel,
+        rankPromotionUnlocked,
         unlockedAchievements,
         awakenedSkill,
       }

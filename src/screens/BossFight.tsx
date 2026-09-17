@@ -67,6 +67,9 @@ export function BossFightScreen() {
       utils.items.inventory.invalidate()
 
       if (result.leveledUp) pushOverlay({ type: "levelUp", from: result.fromLevel, to: result.toLevel })
+      if (result.rankPromotionUnlocked) {
+        pushOverlay({ type: "rankEligible", rank: result.rankPromotionUnlocked.rank, minLevel: result.rankPromotionUnlocked.minLevel })
+      }
       if (result.awakenedSkill) pushOverlay({ type: "awakening", skill: result.awakenedSkill })
 
       if (result.battle.outcome !== "em_andamento") {

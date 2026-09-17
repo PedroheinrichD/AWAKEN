@@ -1,5 +1,6 @@
 import type { Character, PrismaClient } from "@prisma/client"
 import { applyXp } from "../game/xp.js"
+import { checkRankPromotion } from "../game/requirements.js"
 import { bumpRecordStats } from "./stats.service.js"
 
 export async function grantXp(prisma: PrismaClient, character: Character, xpGained: number) {
@@ -38,5 +39,21 @@ export async function grantXp(prisma: PrismaClient, character: Character, xpGain
     await bumpRecordStats(prisma, character.id, result.level, character.rank, character.streakCurrent)
   }
 
-  return { character: updated, levelsGained: result.levelsGained, fromLevel: character.level, toLevel: result.level }
+  // Only true on the grant that pushes the level across the next rank's minLevel — a
+  // later grant sees the *old* level already at/above the threshold, so this won't refire
+  // every time the player is simply eligible (claude.md §4 — promotion should feel like a
+  // real moment, not a state the UI silently sits in).
+  const rankStatus = checkRankPromotion(character.rank, result.level, () => false)
+  const rankPromotionJustUnlocked =
+    rankStatus.nextRank && rankStatus.levelMet && character.level < rankStatus.minLevel
+      ? { rank: rankStatus.nextRank, minLevel: rankStatus.minLevel }
+      : null
+
+  return {
+    character: updated,
+    levelsGained: result.levelsGained,
+    fromLevel: character.level,
+    toLevel: result.level,
+    rankPromotionJustUnlocked,
+  }
 }

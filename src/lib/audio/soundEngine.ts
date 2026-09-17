@@ -14,6 +14,7 @@ export type SoundName =
   | "click"
   | "levelUp"
   | "rankUp"
+  | "rankEligible"
   | "awakening"
   | "bossEncounter"
   | "turnVictory"
@@ -56,6 +57,10 @@ const SOUND_RECIPES: Record<SoundName, ToneStep[]> = {
     { freq: 783.99, startOffset: 0.36, duration: 0.15, type: "sawtooth", gain: 0.1 },
     { freq: 1046.5, startOffset: 0.48, duration: 0.5, type: "triangle", gain: 0.18 },
     { freq: 1318.5, startOffset: 0.48, duration: 0.5, type: "triangle", gain: 0.12 },
+  ],
+  rankEligible: [
+    { freq: 587.33, startOffset: 0, duration: 0.14, type: "triangle", gain: 0.12 },
+    { freq: 880, startOffset: 0.13, duration: 0.35, type: "triangle", gain: 0.14 },
   ],
   awakening: [
     { freq: 330, startOffset: 0, duration: 1.1, type: "sine", gain: 0.1 },

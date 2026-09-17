@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { asIconKey } from "../../mappers.js"
+import { asIconKey, RANK_TO_CLIENT } from "../../mappers.js"
 import { serializeCharacter } from "../../services/character.service.js"
 import { canReviveSolo, killCharacter, reviveSolo } from "../../services/death.service.js"
 import { grantXp } from "../../services/xp.service.js"
@@ -20,7 +20,14 @@ export const devRouter = router({
     .mutation(async ({ ctx, input }) => {
       const character = await requireActiveCharacter(ctx)
       const result = await grantXp(ctx.prisma, character, input.amount)
-      return { leveledUp: result.levelsGained > 0, fromLevel: result.fromLevel, toLevel: result.toLevel }
+      return {
+        leveledUp: result.levelsGained > 0,
+        fromLevel: result.fromLevel,
+        toLevel: result.toLevel,
+        rankPromotionUnlocked: result.rankPromotionJustUnlocked
+          ? { rank: RANK_TO_CLIENT[result.rankPromotionJustUnlocked.rank], minLevel: result.rankPromotionJustUnlocked.minLevel }
+          : null,
+      }
     }),
 
   awaken: protectedProcedure.mutation(async ({ ctx }) => {

@@ -21,6 +21,9 @@ export function DiagnosticsPanel() {
     onSuccess: (result) => {
       invalidateCharacter()
       if (result.leveledUp) pushOverlay({ type: "levelUp", from: result.fromLevel, to: result.toLevel })
+      if (result.rankPromotionUnlocked) {
+        pushOverlay({ type: "rankEligible", rank: result.rankPromotionUnlocked.rank, minLevel: result.rankPromotionUnlocked.minLevel })
+      }
     },
   })
 
