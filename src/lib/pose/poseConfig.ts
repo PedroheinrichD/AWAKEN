@@ -80,8 +80,13 @@ export const PUSHUP_CONFIG = {
    * and rack up "reps" without ever getting on the floor — this blocks that entirely,
    * independent of the elbow angle, since it only needs shoulder+hip (reliable even when
    * the feet aren't in frame, unlike the ankle-based alignment check above).
+   * 45 was too strict for a real phone propped on the floor at an angle (not a clean side
+   * profile): 2D perspective foreshortening measures the shoulder–hip line as noticeably
+   * steeper at the top of the rep (torso higher/closer to the camera) than at the bottom,
+   * so legitimate top-of-rep frames were getting rejected as "not lying down". 65 still
+   * excludes someone actually standing/sitting (torso angle near 90) with room to spare.
    */
-  maxTorsoAngleFromHorizontal: 45,
+  maxTorsoAngleFromHorizontal: 65,
 }
 
 export const SQUAT_CONFIG = {
