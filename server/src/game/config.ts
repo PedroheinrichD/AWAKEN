@@ -75,6 +75,20 @@ export const EXERCISE_XP = { perRep: 2, perKm: 25, perSecondHeld: 3 }
 
 export const DAILY_MISSION_COUNT = 4
 
+/** Bonus for exceeding a running mission's target distance — see game/running.ts. */
+export const RUN_OVERRUN_CONFIG = {
+  /** Extra km required before any bonus applies — filters GPS rounding/noise. */
+  minExtraKm: 0.2,
+  /** Bonus XP per extra km, as a fraction of the mission's base XP reward. */
+  xpBonusPerKmFraction: 0.15,
+  /** Bonus XP never exceeds this fraction of the mission's base XP reward. */
+  xpBonusCapFraction: 0.5,
+  /** Event currency granted per whole extra km. */
+  currencyBonusPerKm: 1,
+  /** Event currency bonus never exceeds this. */
+  currencyBonusCap: 3,
+}
+
 export const BOSS_XP_REWARD: Record<Rank, number> = {
   E: 150,
   D: 400,

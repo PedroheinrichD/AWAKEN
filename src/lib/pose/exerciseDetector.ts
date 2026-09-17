@@ -20,6 +20,11 @@ export function isRepCountedExercise(exerciseId: string): exerciseId is "flexao"
   return (REP_COUNTED_EXERCISE_IDS as readonly string[]).includes(exerciseId)
 }
 
+/** Corrida's km target is validated by GPS distance (useRunSession), not by the camera pipeline. */
+export function isDistanceExercise(exerciseId: string): exerciseId is "corrida" {
+  return exerciseId === "corrida"
+}
+
 /**
  * The only place in the app that maps an exercise id to a detector class.
  * Adding abdominal (or burpee, handstand, …) later means adding one case here

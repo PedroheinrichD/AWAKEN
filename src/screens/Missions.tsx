@@ -3,7 +3,7 @@ import { MissionCard } from "@/components/missions/MissionCard"
 import { Modal } from "@/components/system/Modal"
 import { SystemPanel } from "@/components/system/SystemPanel"
 import type { MissionType } from "@/data/types"
-import { isRepCountedExercise } from "@/lib/pose/exerciseDetector"
+import { isDistanceExercise, isRepCountedExercise } from "@/lib/pose/exerciseDetector"
 import { trpc } from "@/lib/trpc"
 import { useGameStore } from "@/store/useGameStore"
 
@@ -11,6 +11,11 @@ import { useGameStore } from "@/store/useGameStore"
 // only fetched once a camera validation is actually opened (§19).
 const MissionCameraChallenge = lazy(() =>
   import("@/components/missions/MissionCameraChallenge").then((module) => ({ default: module.MissionCameraChallenge })),
+)
+
+// Same reasoning as above, but for the Leaflet map bundle used by GPS-validated runs.
+const MissionRunChallenge = lazy(() =>
+  import("@/components/missions/MissionRunChallenge").then((module) => ({ default: module.MissionRunChallenge })),
 )
 
 const SECTIONS: { type: MissionType; label: string; hint: string }[] = [
@@ -25,6 +30,7 @@ export function MissionsScreen() {
   const { data: missions } = trpc.missions.listToday.useQuery()
 
   const [cameraMissionId, setCameraMissionId] = useState<string | null>(null)
+  const [runMissionId, setRunMissionId] = useState<string | null>(null)
 
   const complete = trpc.missions.complete.useMutation({
     onSuccess: (result) => {
@@ -35,6 +41,7 @@ export function MissionsScreen() {
       utils.achievements.unlocked.invalidate()
       utils.titles.unlocked.invalidate()
       setCameraMissionId(null)
+      setRunMissionId(null)
 
       if (result.leveledUp) pushOverlay({ type: "levelUp", from: result.fromLevel, to: result.toLevel })
       if (result.awakenedSkill) pushOverlay({ type: "awakening", skill: result.awakenedSkill })
@@ -42,6 +49,7 @@ export function MissionsScreen() {
   })
 
   const cameraMission = (missions ?? []).find((mission) => mission.id === cameraMissionId)
+  const runMission = (missions ?? []).find((mission) => mission.id === runMissionId)
 
   return (
     <div className="space-y-8">
@@ -65,6 +73,7 @@ export function MissionsScreen() {
                   onValidateWithCamera={
                     mission.exerciseId && isRepCountedExercise(mission.exerciseId) ? () => setCameraMissionId(mission.id) : undefined
                   }
+                  onValidateWithRun={mission.exerciseId && isDistanceExercise(mission.exerciseId) ? () => setRunMissionId(mission.id) : undefined}
                 />
               ))}
             </div>
@@ -83,6 +92,22 @@ export function MissionsScreen() {
                 pending={complete.isPending}
                 onComplete={() => complete.mutate({ assignmentId: cameraMission.id })}
                 onCancel={() => setCameraMissionId(null)}
+              />
+            </Suspense>
+          ) : null}
+        </SystemPanel>
+      </Modal>
+
+      <Modal open={Boolean(runMission)} onClose={() => setRunMissionId(null)} className="max-w-md">
+        <SystemPanel label={runMission?.title ?? "Validação por GPS"} className="p-5">
+          {runMission && runMission.exerciseId && isDistanceExercise(runMission.exerciseId) ? (
+            <Suspense fallback={<p className="text-center font-mono text-xs text-ink-tertiary">Carregando módulo de mapa...</p>}>
+              <MissionRunChallenge
+                key={runMission.id}
+                target={runMission.target}
+                pending={complete.isPending}
+                onComplete={(distanceKm) => complete.mutate({ assignmentId: runMission.id, distanceKm })}
+                onCancel={() => setRunMissionId(null)}
               />
             </Suspense>
           ) : null}

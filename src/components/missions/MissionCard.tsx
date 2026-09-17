@@ -19,9 +19,11 @@ interface MissionCardProps {
   onToggle?: () => void
   /** When set, this mission's exercise has a real camera detector — show "Validar com Câmera" instead of an unvalidated "Concluir". */
   onValidateWithCamera?: () => void
+  /** When set, this mission tracks distance via GPS — show "Validar com GPS" instead of an unvalidated "Concluir". */
+  onValidateWithRun?: () => void
 }
 
-export function MissionCard({ mission, onToggle, onValidateWithCamera }: MissionCardProps) {
+export function MissionCard({ mission, onToggle, onValidateWithCamera, onValidateWithRun }: MissionCardProps) {
   const color = TYPE_COLOR[mission.type]
   const pct = percentage(mission.progress, mission.target)
 
@@ -67,6 +69,14 @@ export function MissionCard({ mission, onToggle, onValidateWithCamera }: Mission
             className="shrink-0 font-display text-[10px] font-semibold tracking-[0.15em] text-system uppercase hover:text-system-strong"
           >
             Validar com Câmera
+          </button>
+        ) : !mission.completed && onValidateWithRun ? (
+          <button
+            type="button"
+            onClick={onValidateWithRun}
+            className="shrink-0 font-display text-[10px] font-semibold tracking-[0.15em] text-system uppercase hover:text-system-strong"
+          >
+            Validar com GPS
           </button>
         ) : onToggle && !mission.completed ? (
           <button
